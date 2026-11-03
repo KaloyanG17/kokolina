@@ -2,13 +2,17 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ProductGridSkeleton } from "@/components/product-card";
 import { ShopBrowser } from "@/components/shop-browser";
+import { getProducts } from "@/lib/catalog";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Shop the collection",
-  description: "Search and filter every piece in the current collection: tailoring, dresses, shirts, knitwear, skirts and outerwear.",
+  description: "Search and filter every lot in the current collection: selvedge jeans, jackets, shirts, dresses, skirts, overalls and sweats.",
 };
 
-export default function ShopPage() {
+export default async function ShopPage() {
+  const products = await getProducts();
   return (
     <div className="px-4 pb-24 pt-24 md:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-8 pt-12">
@@ -20,7 +24,7 @@ export default function ShopPage() {
           </p>
         </div>
         <Suspense fallback={<ProductGridSkeleton />}>
-          <ShopBrowser />
+          <ShopBrowser products={products} />
         </Suspense>
       </div>
     </div>

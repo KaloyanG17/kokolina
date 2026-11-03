@@ -8,10 +8,11 @@ import { site } from "@/data/site";
 import { formatPrice } from "@/lib/format";
 import { useBag } from "./bag-provider";
 import { BagLines, BagSkeleton, useBagItems } from "./bag-lines";
+import { CheckoutButton } from "./checkout-button";
 
 /** Sidebar bag. Opens from the nav and whenever a piece is added. */
 export function BagDrawer() {
-  const { ready, isOpen, close, toast } = useBag();
+  const { ready, isOpen, close, toast, checkoutEnabled } = useBag();
   const { items, subtotal } = useBagItems();
   const closeRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
@@ -102,12 +103,12 @@ export function BagDrawer() {
               <Link href="/bag" onClick={close} className="btn-secondary">
                 View bag
               </Link>
-              <button type="button" disabled className="btn-primary">
-                Checkout
-              </button>
+              <CheckoutButton className="w-full" />
             </div>
             <p className="caption-5 text-center text-muted">
-              Checkout opens once payments are connected. Free returns within {site.returnWindow}.
+              {checkoutEnabled
+                ? `Secure payment by Stripe. Free returns within ${site.returnWindow}.`
+                : "Checkout opens once payments are connected."}
             </p>
           </div>
         )}

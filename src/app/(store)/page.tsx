@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { faqs } from "@/data/site";
-import { products } from "@/data/products";
+import { getProducts, getSiteImages } from "@/lib/catalog";
 import { Hero } from "@/components/hero";
 import { ProductGrid } from "@/components/product-card";
 import { Reveal } from "@/components/reveal";
@@ -18,13 +18,15 @@ const faqSchema = {
   })),
 };
 
-const newIn = products.filter((p) => p.isNew).slice(0, 4);
+export const revalidate = 60;
 
-export default function Home() {
+export default async function Home() {
+  const [products, images] = await Promise.all([getProducts(), getSiteImages()]);
+  const newIn = products.filter((p) => p.isNew).slice(0, 4);
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <Hero />
+      <Hero photo={images.hero} />
 
       <section aria-labelledby="new-title" className="px-4 py-24 md:px-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-8">
@@ -51,7 +53,7 @@ export default function Home() {
       </section>
 
       <TaglineReveal />
-      <Craft />
+      <Craft campaign={images.campaign} />
       <Ordering />
       <Proof />
       <Faq />

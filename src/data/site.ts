@@ -9,7 +9,7 @@
 export const site = {
   brand: "Kokolina",
   city: "{{city}}",
-  url: "https://example.com", // {{production url}}
+  url: "https://kokolina.vercel.app", // overridden by NEXT_PUBLIC_SITE_URL
   description:
     "Kokolina cuts selvedge denim and workwear in small numbered runs in {{city}}. Every seam is finished by hand.",
   currency: "EUR",

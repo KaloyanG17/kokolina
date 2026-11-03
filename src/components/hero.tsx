@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { site } from "@/data/site";
@@ -6,7 +7,7 @@ import { Selvedge } from "./selvedge";
 
 const specs = ["14 oz selvedge", "Chain stitched hems", "Copper rivets"];
 
-export function Hero() {
+export function Hero({ photo }: { photo?: { url?: string; alt: string } }) {
   return (
     <section aria-labelledby="hero-title" className="relative overflow-hidden">
       {/* Faint engraved hatching behind everything */}
@@ -51,7 +52,13 @@ export function Hero() {
 
           <figure className="flex flex-col gap-3">
             <div className="overflow-hidden rounded-sm border border-line bg-surface shadow-[8px_8px_0_0_var(--color-surface-3)]">
-              <DenimBack className="block aspect-[8/9] w-full" />
+              {photo?.url ? (
+                <div className="relative aspect-[8/9] w-full">
+                  <Image src={photo.url} alt={photo.alt} fill priority sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
+                </div>
+              ) : (
+                <DenimBack className="block aspect-[8/9] w-full" />
+              )}
             </div>
             <figcaption className="caption-5 flex justify-between font-mono uppercase tracking-widest text-muted">
               <span>Fig. 01 · Back pocket, Lot 001</span>

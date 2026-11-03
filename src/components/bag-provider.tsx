@@ -9,11 +9,16 @@ import {
   useRef,
   useState,
 } from "react";
-import { products, type Product } from "@/data/products";
+import type { Product } from "@/data/products";
 
 export type BagLine = { productId: string; size: string; qty: number };
 
 type BagContextValue = {
+  /** Current published catalogue, loaded on the server */
+  catalog: Product[];
+  /** True once Stripe is configured */
+  checkoutEnabled: boolean;
+  clear: () => void;
   lines: BagLine[];
   count: number;
   ready: boolean;
@@ -29,7 +34,15 @@ type BagContextValue = {
 const BagContext = createContext<BagContextValue | null>(null);
 const STORAGE_KEY = "bag:v2";
 
-export function BagProvider({ children }: { children: React.ReactNode }) {
+export function BagProvider({
+  children,
+  catalog,
+  checkoutEnabled,
+}: {
+  children: React.ReactNode;
+  catalog: Product[];
+  checkoutEnabled: boolean;
+}) {
   const [lines, setLines] = useState<BagLine[]>([]);
   const [ready, setReady] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -42,12 +55,14 @@ export function BagProvider({ children }: { children: React.ReactNode }) {
       if (raw) {
         const parsed = JSON.parse(raw) as BagLine[];
         // Drop lines for products that no longer exist
-        setLines(parsed.filter((l) => products.some((p) => p.slug === l.productId)));
+        setLines(parsed.filter((l) => catalog.some((p) => p.slug === l.productId)));
       }
     } catch {
       // Storage blocked or corrupt: start with an empty bag
     }
     setReady(true);
+    // Load once on mount; the catalogue only filters out deleted products
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -92,11 +107,15 @@ export function BagProvider({ children }: { children: React.ReactNode }) {
     setLines((prev) => prev.filter((l) => !(l.productId === productId && l.size === size)));
   }, []);
 
+  const clear = useCallback(() => setLines([]), []);
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);
 
   const value = useMemo<BagContextValue>(
     () => ({
+      catalog,
+      checkoutEnabled,
+      clear,
       lines,
       count: lines.reduce((n, l) => n + l.qty, 0),
       ready,
@@ -108,7 +127,7 @@ export function BagProvider({ children }: { children: React.ReactNode }) {
       remove,
       toast,
     }),
-    [lines, ready, isOpen, open, close, add, setQty, remove, toast],
+    [catalog, checkoutEnabled, clear, lines, ready, isOpen, open, close, add, setQty, remove, toast],
   );
 
   return <BagContext.Provider value={value}>{children}</BagContext.Provider>;

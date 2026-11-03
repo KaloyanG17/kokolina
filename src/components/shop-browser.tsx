@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { MagnifyingGlass, X } from "@phosphor-icons/react";
-import { categories, products, type Category } from "@/data/products";
+import { categories, type Category, type Product } from "@/data/products";
 import { ProductGrid } from "./product-card";
 
 const sorts = {
@@ -23,7 +23,7 @@ function matches(text: string, query: string) {
     .every((term) => haystack.includes(term));
 }
 
-export function ShopBrowser() {
+export function ShopBrowser({ products }: { products: Product[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -65,7 +65,7 @@ export function ShopBrowser() {
     if (sort === "price-desc") return [...list].sort((a, b) => b.price - a.price);
     if (sort === "new") return [...list].sort((a, b) => Number(!!b.isNew) - Number(!!a.isNew));
     return list;
-  }, [category, sort, query]);
+  }, [products, category, sort, query]);
 
   return (
     <div className="flex flex-col gap-8">

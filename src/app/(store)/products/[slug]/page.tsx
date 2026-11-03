@@ -3,27 +3,33 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CaretRight, Plus } from "@phosphor-icons/react/dist/ssr";
-import { getProduct, getRelated, products } from "@/data/products";
+import { getProduct, getProducts, relatedTo } from "@/lib/catalog";
 import { site } from "@/data/site";
-import { ProductArt } from "@/components/product-art";
+import { ProductPicture } from "@/components/product-picture";
 import { PriceTag, ProductGrid } from "@/components/product-card";
 import { ProductPurchase } from "@/components/product-purchase";
 
 type Props = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }));
+// Rebuilt in the background at most once a minute; admin edits revalidate straight away
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  return (await getProducts()).map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const product = getProduct((await params).slug);
+  const product = await getProduct((await params).slug);
   if (!product) return {};
   return { title: product.name, description: product.description };
 }
 
 export default async function ProductPage({ params }: Props) {
-  const product = getProduct((await params).slug);
+  const { slug } = await params;
+  const all = await getProducts();
+  const product = all.find((p) => p.slug === slug);
   if (!product) notFound();
+  const extraPhotos = product.images?.slice(1) ?? [];
 
   const details = [
     { title: "Fabric and care", body: `${product.fabric}. ${product.care}` },
@@ -79,27 +85,29 @@ export default async function ProductPage({ params }: Props) {
 
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
             <div className="stitched-lg overflow-hidden rounded-lg border border-line bg-surface-2 [--stitch:var(--color-line)]">
-              {product.image ? (
-                <div className="relative aspect-[3/4]">
-                  <Image
-                    src={product.image}
-                    alt={`${product.name} in ${product.colour}`}
-                    fill
-                    priority
-                    sizes="(min-width: 1024px) 55vw, 100vw"
-                    className="object-cover"
-                  />
-                </div>
-              ) : (
-                <ProductArt
-                  kind={product.art}
-                  wash={product.wash}
-                  id={`pdp-${product.slug}`}
-                  label={`Engraved drawing of the ${product.name.toLowerCase()}`}
-                  className="aspect-[3/4] w-full"
-                />
-              )}
+              <ProductPicture
+                product={product}
+                idPrefix="pdp"
+                priority
+                sizes="(min-width: 1024px) 55vw, 100vw"
+                className="aspect-[3/4] w-full"
+              />
             </div>
+            {extraPhotos.length > 0 && (
+              <ul className="grid grid-cols-2 gap-4 lg:col-start-1">
+                {extraPhotos.map((photo) => (
+                  <li key={photo.url} className="relative aspect-[3/4] overflow-hidden rounded-md border border-line bg-surface-2">
+                    <Image
+                      src={photo.url}
+                      alt={photo.alt || `${product.name}, another view`}
+                      fill
+                      sizes="(min-width: 1024px) 27vw, 50vw"
+                      className="object-cover"
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
 
             <div className="flex flex-col gap-8 lg:sticky lg:top-24 lg:self-start">
               <div className="flex flex-col gap-3">
@@ -140,7 +148,7 @@ export default async function ProductPage({ params }: Props) {
           <h2 id="related-title" className="heading-5 md:heading-4">
             You may also like
           </h2>
-          <ProductGrid products={getRelated(product, 4)} idPrefix="related" />
+          <ProductGrid products={relatedTo(product, all)} idPrefix="related" />
         </section>
       </div>
     </div>

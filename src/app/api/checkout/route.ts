@@ -1,0 +1,81 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { getProducts } from "@/lib/catalog";
+import { env } from "@/lib/env";
+import { SHIPPING_COUNTRIES, stripe, type CheckoutItem } from "@/lib/stripe";
+
+const Body = z.object({
+  lines: z
+    .array(
+      z.object({
+        productId: z.string().min(1).max(120),
+        size: z.string().min(1).max(10),
+        qty: z.number().int().min(1).max(10),
+      }),
+    )
+    .min(1)
+    .max(30),
+});
+
+/**
+ * Creates a Stripe Checkout Session from the bag. Prices, names and stock
+ * come from the catalogue on the server, never from the browser.
+ */
+export async function POST(req: Request) {
+  const s = stripe();
+  if (!s) return NextResponse.json({ error: "Checkout is not connected yet." }, { status: 503 });
+
+  const parsed = Body.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) return NextResponse.json({ error: "Your bag could not be read. Refresh and try again." }, { status: 400 });
+
+  const catalog = await getProducts();
+  const items: CheckoutItem[] = [];
+  for (const line of parsed.data.lines) {
+    const product = catalog.find((p) => p.slug === line.productId);
+    if (!product || !product.sizes.includes(line.size)) {
+      return NextResponse.json({ error: "A piece in your bag is no longer available. Remove it and try again." }, { status: 409 });
+    }
+    if (product.soldOut) {
+      return NextResponse.json({ error: `${product.name} has sold out. Remove it to continue.` }, { status: 409 });
+    }
+    const wanted = items.filter((i) => i.slug === product.slug).reduce((n, i) => n + i.qty, 0) + line.qty;
+    if (typeof product.stock === "number" && wanted > product.stock) {
+      return NextResponse.json(
+        { error: `Only ${product.stock} of ${product.name} left. Lower the quantity to continue.` },
+        { status: 409 },
+      );
+    }
+    items.push({
+      slug: product.slug,
+      name: product.name,
+      size: line.size,
+      qty: line.qty,
+      unitAmount: Math.round(product.price * 100),
+    });
+  }
+
+  const origin = env.siteUrl.replace(/\/$/, "");
+  const session = await s.checkout.sessions.create({
+    mode: "payment",
+    line_items: items.map((i) => ({
+      quantity: i.qty,
+      price_data: {
+        currency: "eur",
+        unit_amount: i.unitAmount,
+        product_data: { name: i.name, description: `Size ${i.size}`, metadata: { slug: i.slug, size: i.size } },
+      },
+    })),
+    shipping_address_collection: { allowed_countries: [...SHIPPING_COUNTRIES] },
+    phone_number_collection: { enabled: true },
+    billing_address_collection: "auto",
+    // Compact copy of the order for the webhook (Stripe metadata values max 500 chars)
+    metadata: {
+      items: JSON.stringify(items.map((i) => [i.slug, i.size, i.qty, i.unitAmount])).slice(0, 500),
+    },
+    success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/bag`,
+  });
+
+  if (!session.url) return NextResponse.json({ error: "Stripe did not return a checkout page. Try again." }, { status: 502 });
+  return NextResponse.json({ url: session.url });
+}

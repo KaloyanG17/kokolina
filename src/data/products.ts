@@ -34,8 +34,11 @@ export type Product = {
   sizes: string[];
   art: GarmentKind;
   wash: Wash;
-  /** Optional real photo; the engraved drawing is shown until one is added. */
-  image?: string;
+  /** Database id, absent for sample data. */
+  id?: string;
+  /** Uploaded photos (public URLs). The engraved drawing is shown until one is added. */
+  images?: { url: string; alt: string }[];
+  stock?: number;
   isNew?: boolean;
   soldOut?: boolean;
 };
@@ -43,7 +46,8 @@ export type Product = {
 const WAIST = ["26", "28", "30", "32", "34", "36"];
 const LETTER = ["XS", "S", "M", "L", "XL"];
 
-export const products: Product[] = [
+/** Sample data: used when Supabase is not configured, and the source of supabase/seed.sql. */
+export const sampleProducts: Product[] = [
   {
     slug: "selvedge-straight-jean",
     lot: "Lot 001",
@@ -242,13 +246,3 @@ export const products: Product[] = [
     wash: "rinse",
   },
 ];
-
-export function getProduct(slug: string) {
-  return products.find((p) => p.slug === slug);
-}
-
-export function getRelated(product: Product, count = 3) {
-  const same = products.filter((p) => p.slug !== product.slug && p.category === product.category);
-  const others = products.filter((p) => p.slug !== product.slug && p.category !== product.category);
-  return [...same, ...others].slice(0, count);
-}

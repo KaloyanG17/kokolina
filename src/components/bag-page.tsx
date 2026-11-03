@@ -6,9 +6,10 @@ import { site } from "@/data/site";
 import { formatPrice } from "@/lib/format";
 import { useBag } from "./bag-provider";
 import { BagLines, BagSkeleton, useBagItems } from "./bag-lines";
+import { CheckoutButton } from "./checkout-button";
 
 export function BagPageContent() {
-  const { ready, count } = useBag();
+  const { ready, count, checkoutEnabled } = useBag();
   const { items, subtotal } = useBagItems();
 
   if (!ready) return <BagSkeleton rows={3} />;
@@ -56,11 +57,11 @@ export function BagPageContent() {
             <dd className="title-3 tabular-nums">{formatPrice(subtotal)}</dd>
           </div>
         </dl>
-        <button type="button" disabled className="btn-primary button-lg w-full py-3">
-          Go to checkout
-        </button>
+        <CheckoutButton label="Go to checkout" className="button-lg w-full py-3" />
         <p className="caption-5 text-center text-muted">
-          Checkout opens once payments are connected. Free returns within {site.returnWindow}.
+          {checkoutEnabled
+            ? `Secure payment by Stripe. Free returns within ${site.returnWindow}.`
+            : "Checkout opens once payments are connected."}
         </p>
         <Link
           href="/shop"

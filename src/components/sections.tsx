@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Drop, Needle, Plus, Quotes, Ruler, Stack } from "@phosphor-icons/react/dist/ssr";
 import { faqs, press, site, testimonials } from "@/data/site";
@@ -53,7 +54,7 @@ const benefits = [
   },
 ];
 
-export function Craft() {
+export function Craft({ campaign }: { campaign?: { url?: string; alt: string } }) {
   return (
     <section aria-labelledby="craft-title" id="craft" className="px-4 py-24 md:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-12">
@@ -64,7 +65,13 @@ export function Craft() {
           intro={`Each style is cut in runs of ${site.runSize} pieces. When a lot is gone, it is gone.`}
         />
         <Reveal className="overflow-hidden rounded-sm border border-line">
-          <AtelierScene className="block h-64 w-full sm:h-auto" />
+          {campaign?.url ? (
+            <div className="relative aspect-[16/7] w-full">
+              <Image src={campaign.url} alt={campaign.alt} fill sizes="(min-width: 1280px) 1216px, 100vw" className="object-cover" />
+            </div>
+          ) : (
+            <AtelierScene className="block h-64 w-full sm:h-auto" />
+          )}
         </Reveal>
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {benefits.map(({ icon: Icon, title, text }) => (

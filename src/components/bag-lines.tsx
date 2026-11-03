@@ -2,15 +2,14 @@
 
 import Link from "next/link";
 import { Minus, Plus } from "@phosphor-icons/react";
-import { products } from "@/data/products";
 import { formatPrice } from "@/lib/format";
 import { useBag } from "./bag-provider";
-import { ProductArt } from "./product-art";
+import { ProductPicture } from "./product-picture";
 
 export function useBagItems() {
-  const { lines } = useBag();
+  const { lines, catalog } = useBag();
   const items = lines
-    .map((l) => ({ ...l, product: products.find((p) => p.slug === l.productId) }))
+    .map((l) => ({ ...l, product: catalog.find((p) => p.slug === l.productId) }))
     .filter((l): l is typeof l & { product: NonNullable<typeof l.product> } => Boolean(l.product));
   const subtotal = items.reduce((sum, i) => sum + i.product.price * i.qty, 0);
   return { items, subtotal };
@@ -31,11 +30,10 @@ export function BagLines({ size = "sm", onNavigate }: { size?: "sm" | "lg"; onNa
             onClick={onNavigate}
             className={`focus-ring shrink-0 overflow-hidden rounded-sm bg-surface-2 ${thumb}`}
           >
-            <ProductArt
-              kind={i.product.art}
-              wash={i.product.wash}
-              id={`bag-${size}-${i.productId}-${i.size}`}
-              label={i.product.name}
+            <ProductPicture
+              product={i.product}
+              idPrefix={`bag-${size}-${i.size}`}
+              sizes="128px"
               className="h-full w-full"
             />
           </Link>

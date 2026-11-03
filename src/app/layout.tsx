@@ -1,13 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { site } from "@/data/site";
-import { BagProvider } from "@/components/bag-provider";
-import { BagDrawer } from "@/components/bag-drawer";
-import { Nav } from "@/components/nav";
-import { Footer } from "@/components/footer";
 import { EngraveDefs } from "@/components/product-art";
-import { LoadingScreen } from "@/components/stitch-loader";
-import { ScrollRail } from "@/components/scroll-rail";
 import "./globals.css";
 
 const geist = Geist({
@@ -24,7 +18,7 @@ const geistMono = Geist_Mono({
 const title = `${site.brand}, selvedge denim cut and stitched in small runs`;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? site.url),
   title: { default: title, template: `%s · ${site.brand}` },
   description: site.description,
   openGraph: {
@@ -64,14 +58,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           Skip to content
         </a>
         <EngraveDefs />
-        <LoadingScreen />
-        <BagProvider>
-          <Nav />
-          <main id="main">{children}</main>
-          <Footer />
-          <BagDrawer />
-        </BagProvider>
-        <ScrollRail />
+        {children}
       </body>
     </html>
   );
