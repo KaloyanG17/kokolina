@@ -1,0 +1,379 @@
+@import "tailwindcss";
+
+/* Dark theme follows data-theme on <html>, set before paint in the layout */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@theme {
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Unbleached cotton, raw indigo and copper thread */
+  --color-base: #f3efe6;
+  --color-surface: #faf7f0;
+  --color-surface-2: #ebe5d8;
+  --color-surface-3: #e2dbcb;
+  --color-line: #d6cdb9;
+  --color-fg: #141b2e;
+  --color-muted: #5c6070;
+  --color-ink: #23366e;
+  --color-ink-deep: #16213e;
+  --color-ink-soft: #d3dbec;
+  --color-indigo-deep: #16213e;
+  --color-indigo: #23366e;
+  --color-cotton-2: #e2dbcb;
+  --color-faded: #b9c6e2;
+  --color-cotton: #f3efe6;
+  --color-thread: #d68a2e;
+  --color-copper: #b8733a;
+  --color-leather: #8b5a3c;
+  --color-selvedge: #c23b32;
+  --color-danger: #b3261e;
+
+  /* Base motion curve */
+  --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- Text styles (B1) ---------- */
+
+@utility heading-1 {
+  font-size: var(--text-6xl);
+  line-height: var(--text-6xl--line-height);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+@utility heading-2 {
+  font-size: var(--text-5xl);
+  line-height: var(--text-5xl--line-height);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+@utility heading-3 {
+  font-size: var(--text-4xl);
+  line-height: var(--text-4xl--line-height);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+@utility heading-4 {
+  font-size: var(--text-3xl);
+  line-height: var(--text-3xl--line-height);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+@utility heading-5 {
+  font-size: var(--text-2xl);
+  line-height: var(--text-2xl--line-height);
+  font-weight: 600;
+  text-wrap: balance;
+}
+@utility heading-6 {
+  font-size: var(--text-xl);
+  line-height: var(--text-xl--line-height);
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+@utility title-1 {
+  font-size: var(--text-xl);
+  line-height: var(--text-xl--line-height);
+  font-weight: 500;
+}
+@utility title-2 {
+  font-size: var(--text-lg);
+  line-height: var(--text-lg--line-height);
+  font-weight: 500;
+}
+@utility title-3 {
+  font-size: var(--text-base);
+  line-height: var(--text-base--line-height);
+  font-weight: 500;
+}
+@utility title-4 {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm--line-height);
+  font-weight: 500;
+}
+
+@utility body-1 {
+  font-size: var(--text-base);
+  line-height: var(--text-base--line-height);
+  font-weight: 600;
+  text-wrap: pretty;
+}
+@utility body-2 {
+  font-size: var(--text-base);
+  line-height: var(--text-base--line-height);
+  font-weight: 500;
+  text-wrap: pretty;
+}
+@utility body-3 {
+  font-size: var(--text-base);
+  line-height: var(--text-base--line-height);
+  font-weight: 400;
+  text-wrap: pretty;
+}
+@utility body-5 {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm--line-height);
+  font-weight: 500;
+  text-wrap: pretty;
+}
+@utility body-6 {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm--line-height);
+  font-weight: 400;
+  text-wrap: pretty;
+}
+
+/* Body 7: added for the hero subheading, built from text-lg */
+@utility body-7 {
+  font-size: var(--text-lg);
+  line-height: var(--text-lg--line-height);
+  font-weight: 400;
+  text-wrap: pretty;
+}
+
+@utility button-lg {
+  font-size: var(--text-lg);
+  line-height: var(--text-lg--line-height);
+  font-weight: 600;
+}
+@utility button-md {
+  font-size: var(--text-base);
+  line-height: var(--text-base--line-height);
+  font-weight: 600;
+}
+@utility button-sm {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm--line-height);
+  font-weight: 600;
+}
+
+@utility caption-1 {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm--line-height);
+  font-weight: 500;
+}
+@utility caption-2 {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm--line-height);
+  font-weight: 400;
+}
+@utility caption-3 {
+  font-size: var(--text-xs);
+  line-height: var(--text-xs--line-height);
+  font-weight: 600;
+}
+@utility caption-4 {
+  font-size: var(--text-xs);
+  line-height: var(--text-xs--line-height);
+  font-weight: 500;
+}
+@utility caption-5 {
+  font-size: var(--text-xs);
+  line-height: var(--text-xs--line-height);
+  font-weight: 400;
+}
+
+/* Hero heading gradient: text only, never backgrounds (B5) */
+@utility text-hero-gradient {
+  background-image: linear-gradient(to right, var(--hero-from), var(--hero-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------- Shared components ---------- */
+
+@layer components {
+  /*
+   * Buttons are woven labels sewn onto the page: square corners, a fine
+   * weave, uppercase type, and a line of copper stitching across each end.
+   */
+  .btn-primary,
+  .btn-secondary,
+  .label-tag {
+    @apply relative inline-flex items-center justify-center gap-2 rounded-sm px-4 py-2 uppercase tracking-[0.08em]
+      transition-[background-color,color,transform] duration-300 ease-brand
+      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink;
+    background-image: var(--weave);
+  }
+  .btn-primary,
+  .btn-secondary {
+    @apply button-md hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98];
+  }
+  .btn-primary,
+  .label-tag {
+    background-color: var(--label-bg);
+    color: var(--label-fg);
+  }
+  .btn-primary:hover {
+    background-color: var(--label-bg-hover);
+  }
+  .btn-secondary {
+    @apply border border-current bg-surface text-fg hover:bg-surface-2;
+  }
+  .btn-primary::before,
+  .btn-primary::after,
+  .btn-secondary::before,
+  .btn-secondary::after,
+  .label-tag::before,
+  .label-tag::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    border-left: 1.5px dashed var(--color-thread);
+    pointer-events: none;
+  }
+  .btn-primary::before,
+  .btn-secondary::before,
+  .label-tag::before {
+    left: 5px;
+  }
+  .btn-primary::after,
+  .btn-secondary::after,
+  .label-tag::after {
+    right: 5px;
+  }
+  .btn-primary:disabled {
+    @apply cursor-not-allowed bg-surface-3 text-muted hover:translate-y-0 active:scale-100;
+  }
+  .btn-primary:disabled::before,
+  .btn-primary:disabled::after {
+    border-color: var(--color-line);
+  }
+
+  /* Stitched cards: dashed seam inset 8px, radius follows the nesting formula */
+  .stitched,
+  .stitched-lg {
+    position: relative;
+  }
+  .stitched::before,
+  .stitched-lg::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border: 1.5px dashed var(--stitch, var(--color-thread));
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .stitched::before {
+    border-radius: 0; /* rounded-md (6) minus 8 is below zero: square */
+  }
+  .stitched-lg::before {
+    border-radius: 0; /* rounded-lg (8) minus 8: square */
+  }
+
+  /* Raw denim surface: indigo with a fine twill weave */
+  .denim {
+    background-color: var(--color-indigo-deep);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='12'%3E%3Cpath d='M0 12 L6 0' stroke='%23ffffff' stroke-opacity='0.07' stroke-width='1.4'/%3E%3Cpath d='M-3 6 L0 0 M6 12 L9 6' stroke='%23ffffff' stroke-opacity='0.07' stroke-width='1.4'/%3E%3C/svg%3E");
+    color: var(--color-cotton);
+  }
+
+  /* Wordmark: the same woven label, always black with cotton type */
+  .patch {
+    font-weight: 600;
+    --label-bg: #141414;
+    --label-fg: #f3efe6;
+  }
+
+  .focus-ring {
+    @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink;
+  }
+  .skeleton {
+    @apply animate-pulse bg-surface-3;
+  }
+}
+
+/* The stitched rail on the right replaces the native scrollbar */
+html {
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 96px;
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-base);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-property: opacity !important;
+    animation: none !important;
+  }
+}
+
+
+/* ---------- Themes ----------
+   Denim, cotton, thread, copper and leather stay the same in both themes.
+   Surfaces, text and the ink accent switch. */
+:root {
+  --hero-from: #000000;
+  --hero-to: #666666;
+  --label-bg: #141414;
+  --label-bg-hover: #2a2a2a;
+  --label-fg: #f3efe6;
+  /* Fine horizontal weave for woven labels */
+  --weave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='3'%3E%3Cpath d='M0 1.5 H4' stroke='%23808080' stroke-opacity='0.18' stroke-width='0.8'/%3E%3C/svg%3E");
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --label-bg: #f3efe6;
+  --label-bg-hover: #e2dbcb;
+  --label-fg: #141414;
+  --color-base: #131209;
+  --color-surface: #1f1f1f;
+  --color-surface-2: #272727;
+  --color-surface-3: #313131;
+  --color-line: #3b3933;
+  --color-fg: #f3efe6;
+  --color-muted: #a8a497;
+  --color-ink: #a9bbea;
+  --color-ink-soft: #2a3554;
+  --color-danger: #ff8a80;
+  --hero-from: #ffffff;
+  --hero-to: #9b9b9b;
+}
+
+/* No script: follow the system setting */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --label-bg: #f3efe6;
+    --label-bg-hover: #e2dbcb;
+    --label-fg: #141414;
+    --color-base: #131209;
+    --color-surface: #1f1f1f;
+    --color-surface-2: #272727;
+    --color-surface-3: #313131;
+    --color-line: #3b3933;
+    --color-fg: #f3efe6;
+    --color-muted: #a8a497;
+    --color-ink: #a9bbea;
+    --color-ink-soft: #2a3554;
+    --color-danger: #ff8a80;
+    --hero-from: #ffffff;
+    --hero-to: #9b9b9b;
+  }
+}
