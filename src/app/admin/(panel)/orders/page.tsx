@@ -5,6 +5,7 @@ import { formatPrice } from "@/lib/format";
 import { getProducts } from "@/lib/catalog";
 import { ProductPicture } from "@/components/product-picture";
 import { Notice, PageHeader } from "@/components/admin/ui";
+import { LiveRefresh } from "@/components/admin/live-refresh";
 import { setOrderStatus } from "../../actions";
 
 export const metadata: Metadata = { title: "Orders" };
@@ -31,6 +32,7 @@ export default async function Orders() {
   return (
     <>
       <PageHeader title="Orders" intro="Paid orders arrive here from Stripe. Mark them fulfilled once they are posted." />
+      <LiveRefresh />
       {!has.stripe && <Notice>Stripe is not connected yet. Orders appear once checkout and the webhook are set up.</Notice>}
       {error && <Notice tone="error">Could not load orders: {error.message}</Notice>}
 
