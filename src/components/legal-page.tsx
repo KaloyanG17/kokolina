@@ -3,6 +3,26 @@ import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import { site } from "@/data/site";
 import { getT } from "@/i18n/server";
 
+/** Turns the studio email inside a sentence into a link. */
+function withEmailLink(text: string) {
+  const email = site.contactEmail;
+  if (!email || !text.includes(email)) return text;
+  return text.split(email).flatMap((part, i) =>
+    i === 0
+      ? [part]
+      : [
+          <a
+            key={i}
+            href={`mailto:${email}`}
+            className="focus-ring rounded text-ink underline underline-offset-4 transition-colors duration-300 ease-brand hover:text-fg"
+          >
+            {email}
+          </a>,
+          part,
+        ],
+  );
+}
+
 export async function LegalPage({ page }: { page: "privacy" | "terms" }) {
   const { legal } = await getT();
   const { title, sections } = legal[page];
@@ -24,13 +44,13 @@ export async function LegalPage({ page }: { page: "privacy" | "terms" }) {
         <section className="stitched flex flex-col gap-2 rounded-md border border-line bg-surface p-6 [--stitch:var(--color-line)]">
           <h2 className="title-2 relative z-[2]">{legal.seller}</h2>
           <p className="body-6 relative z-[2] text-muted">
-            {site.seller ? legal.sellerDetails(site.seller) : legal.sellerPending}
+            {withEmailLink(site.seller ? legal.sellerDetails(site.seller) : legal.sellerPending)}
           </p>
         </section>
         {sections.map((s) => (
           <section key={s.heading} className="flex flex-col gap-2">
             <h2 className="heading-6">{s.heading}</h2>
-            <p className="body-3 text-muted">{s.body}</p>
+            <p className="body-3 text-muted">{withEmailLink(s.body)}</p>
           </section>
         ))}
       </div>

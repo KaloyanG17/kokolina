@@ -105,7 +105,7 @@ export function ShopBrowser({ products }: { products: Product[] }) {
           </div>
         </div>
 
-        <div role="group" aria-label={t.shop.filter} className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0">
+        <div role="group" aria-label={t.shop.filter} className="-mx-4 flex gap-2 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,black_85%,transparent)] [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0 md:[mask-image:none] [&::-webkit-scrollbar]:hidden">
           {categories.map((c) => (
             <button
               key={c}

@@ -355,6 +355,13 @@ option {
   display: none;
 }
 
+/* On touch screens the native scroll is better than a drag rail at the screen edge, which catches thumbs */
+@media (pointer: coarse) {
+  .scroll-rail {
+    display: none;
+  }
+}
+
 /* The stitched rail on the right replaces the native scrollbar */
 html {
   scrollbar-width: none;

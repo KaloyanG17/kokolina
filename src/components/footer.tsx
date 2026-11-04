@@ -48,7 +48,7 @@ function footerColumns(t: Dict): { title: string; items: { label: string; href: 
 export function Footer() {
   const t = useT();
   return (
-    <footer className="denim relative mt-24">
+    <footer className="denim relative">
       <Selvedge />
       <div className="relative px-4 pt-16 pb-12 md:px-8">
         <div className="relative mx-auto grid max-w-7xl grid-cols-2 gap-8 md:grid-cols-[1.4fr_1fr_1fr_1fr_1.6fr] md:gap-6">

@@ -45,6 +45,11 @@ export type Product = {
   exclusive?: boolean;
 };
 
+/** Colour and fabric joined, skipping whichever is empty. */
+export function productDetails(product: Pick<Product, "colour" | "fabric">) {
+  return [product.colour, product.fabric].filter(Boolean).join(" · ");
+}
+
 const WAIST = ["26", "28", "30", "32", "34", "36"];
 const LETTER = ["XS", "S", "M", "L", "XL"];
 

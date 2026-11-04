@@ -22,18 +22,18 @@ export async function Hero({ photo }: { photo?: { url?: string; alt: string } })
             </p>
             <h1 id="hero-title" className="heading-3 md:heading-1 lg:heading-2 text-hero-gradient max-w-[680px]">
               {hero.title[0]}
-              <br />
-              {hero.title[1]}
+              {/* Two set lines from tablet up; on phones the heading balances itself */}
+              <br className="hidden md:block" /> {hero.title[1]}
             </h1>
             <p className="body-3 md:body-7 max-w-[560px] text-muted">
               {hero.intro}
             </p>
             <div className="flex flex-col items-start gap-4 pt-2 sm:flex-row sm:items-center sm:gap-6">
-              <Link href="/shop" className="btn-primary button-lg px-6 py-3">
+              <Link href="/shop" className="btn-primary button-lg shrink-0 whitespace-nowrap px-6 py-3">
                 {hero.cta}
                 <ArrowRight size={18} weight="bold" aria-hidden />
               </Link>
-              <p className="caption-2 text-muted">{hero.delivery}</p>
+              <p className="caption-2 text-pretty text-muted">{hero.delivery}</p>
             </div>
             <ul className="flex flex-wrap gap-2 pt-2" aria-label={hero.specsLabel}>
               {hero.specs.map((s) => (

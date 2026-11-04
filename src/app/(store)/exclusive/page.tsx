@@ -55,7 +55,7 @@ export default async function ExclusivePage() {
                 {copy.piecesTitle}
               </h2>
               <Reveal>
-                <ProductGrid products={pieces} idPrefix="exclusive" />
+                <ProductGrid products={pieces} idPrefix="exclusive" showExclusive={false} />
               </Reveal>
             </>
           ) : (

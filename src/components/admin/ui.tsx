@@ -68,7 +68,8 @@ export function Field({
     name,
     "aria-invalid": error ? true : undefined,
     "aria-describedby": describedBy,
-    className: `${inputClass} ${error ? "border-danger" : "border-line"}`,
+    // A lighter border in the dark theme so empty fields stay visible against the card
+    className: `${inputClass} ${error ? "border-danger" : "border-line dark:border-faded/30"}`,
   };
   return (
     <div className={`flex flex-col gap-2 ${className}`}>

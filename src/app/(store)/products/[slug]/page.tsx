@@ -7,6 +7,7 @@ import { getProduct, getProducts, relatedTo } from "@/lib/catalog";
 import { site } from "@/data/site";
 import { ProductPicture } from "@/components/product-picture";
 import { PriceTag, ProductGrid } from "@/components/product-card";
+import { productDetails } from "@/data/products";
 import { ProductPurchase } from "@/components/product-purchase";
 import { dictionaries } from "@/i18n/dictionaries";
 import { getLocale } from "@/i18n/server";
@@ -115,7 +116,7 @@ export default async function ProductPage({ params }: Props) {
                 <PriceTag price={product.price} className="self-start" />
                 <p className="caption-5 text-muted">{t.product.priceNote}</p>
                 <p className="caption-2 text-muted">
-                  {product.colour} · {product.fabric}
+                  {productDetails(product)}
                 </p>
               </div>
 

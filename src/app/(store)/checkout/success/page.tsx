@@ -46,7 +46,7 @@ export default async function CheckoutSuccess({ searchParams }: { searchParams: 
       {paid && <ClearBag />}
       <div className="mx-auto flex max-w-xl flex-col gap-8 pt-16">
         <div className="flex flex-col gap-4">
-          <p className="caption-3 font-mono uppercase tracking-widest text-ink">{copy.eyebrow}</p>
+          <p className="caption-3 font-mono uppercase tracking-widest text-ink">{paid ? copy.eyebrow : copy.missingEyebrow}</p>
           <h1 className="heading-4 md:heading-3 text-hero-gradient">
             {paid ? copy.paidTitle : copy.missingTitle}
           </h1>

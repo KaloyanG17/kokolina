@@ -76,7 +76,7 @@ export function ScrollRail() {
       onPointerMove={(e) => {
         if (e.currentTarget.hasPointerCapture(e.pointerId)) scrollToPointer(e.clientY);
       }}
-      className={`group fixed bottom-4 right-0 top-24 z-30 w-6 cursor-grab touch-none select-none transition-opacity duration-500 ease-brand active:cursor-grabbing md:right-2 md:w-8 ${
+      className={`scroll-rail group fixed bottom-4 right-0 top-24 z-30 w-6 cursor-grab touch-none select-none transition-opacity duration-500 ease-brand active:cursor-grabbing md:right-2 md:w-8 ${
         scrollable ? "opacity-100" : "pointer-events-none opacity-0"
       }`}
     >

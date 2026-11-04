@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useT } from "@/i18n/client";
-import type { Product } from "@/data/products";
+import { productDetails, type Product } from "@/data/products";
 import { formatPrice } from "@/lib/format";
 import { ProductPicture } from "./product-picture";
 
@@ -18,7 +18,16 @@ export function PriceTag({ price, className = "" }: { price: number; className?:
   );
 }
 
-export function ProductCard({ product, idPrefix = "card" }: { product: Product; idPrefix?: string }) {
+export function ProductCard({
+  product,
+  idPrefix = "card",
+  showExclusive = true,
+}: {
+  product: Product;
+  idPrefix?: string;
+  /** Off on the exclusive page, where every piece is exclusive. */
+  showExclusive?: boolean;
+}) {
   const t = useT();
   return (
     <Link
@@ -30,7 +39,9 @@ export function ProductCard({ product, idPrefix = "card" }: { product: Product; 
           product={product}
           idPrefix={idPrefix}
           sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-          className="aspect-[3/4] w-full transition-transform duration-300 ease-brand group-hover:scale-[1.03]"
+          className={`aspect-[3/4] w-full transition-transform duration-300 ease-brand group-hover:scale-[1.03] ${
+            product.soldOut ? "opacity-60 grayscale" : ""
+          }`}
         />
         <span className="caption-3 absolute left-2 top-2 rounded-md bg-cotton/90 px-2 py-1 font-mono uppercase tracking-wider text-ink-deep">
           {product.lot}
@@ -44,32 +55,39 @@ export function ProductCard({ product, idPrefix = "card" }: { product: Product; 
             {product.soldOut ? t.product.soldOut : t.product.new}
           </span>
         )}
-        {product.exclusive && (
+        {showExclusive && product.exclusive && (
           <span className="caption-3 absolute bottom-2 left-2 flex items-center gap-1.5 rounded-md bg-[#141414] px-2 py-1 uppercase tracking-wider text-cotton">
             <span aria-hidden className="size-1.5 rounded-full bg-dot" />
             {t.product.exclusive}
           </span>
         )}
       </div>
-      <div className="flex flex-col gap-3 px-3">
+      {/* Grows to fill the card so prices line up across a row */}
+      <div className="flex flex-1 flex-col gap-3 px-3">
         <div className="flex flex-col gap-1">
           <h3 className="title-3">{product.name}</h3>
-          <p className="caption-5 text-muted">
-            {product.colour} · {product.fabric}
-          </p>
+          <p className="caption-5 text-muted">{productDetails(product)}</p>
         </div>
-        <PriceTag price={product.price} className="self-start" />
+        <PriceTag price={product.price} className="mt-auto self-start" />
       </div>
     </Link>
   );
 }
 
-export function ProductGrid({ products, idPrefix }: { products: Product[]; idPrefix?: string }) {
+export function ProductGrid({
+  products,
+  idPrefix,
+  showExclusive,
+}: {
+  products: Product[];
+  idPrefix?: string;
+  showExclusive?: boolean;
+}) {
   return (
     <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
       {products.map((p) => (
         <li key={p.slug}>
-          <ProductCard product={p} idPrefix={idPrefix} />
+          <ProductCard product={p} idPrefix={idPrefix} showExclusive={showExclusive} />
         </li>
       ))}
     </ul>

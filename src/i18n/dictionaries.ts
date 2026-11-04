@@ -51,7 +51,7 @@ const en = {
     title: ["Raw denim, cut", "and stitched by hand"],
     intro: `${site.brand} cuts selvedge denim and workwear in small numbered runs in ${site.city.en}. Every seam is finished by hand, so each piece wears in to fit you.`,
     cta: "Shop the denim",
-    delivery: `Free delivery in Bulgaria on orders over ${eur(shipping.freeFrom)}`,
+    delivery: `Free delivery in Bulgaria on orders over ${eur(shipping.freeFrom)}`,
     specsLabel: "How it is made",
     specs: ["14 oz selvedge", "Chain stitched hems", "Copper rivets"],
     figure: "Fig. 01 · Back pocket, Lot 001",
@@ -265,8 +265,9 @@ const en = {
   loader: { loading: "Loading the shop", stitching: "Stitching the collection" },
   scroll: "Page scroll position",
   success: {
-    metaTitle: "Order confirmed",
+    metaTitle: "Your order",
     eyebrow: "Order confirmed",
+    missingEyebrow: "Your order",
     paidTitle: "Thank you, it is being packed",
     missingTitle: "We could not find that order",
     paidText: (email: string) =>
@@ -423,7 +424,7 @@ const bg: Dict = {
     title: ["Суров деним, скроен", "и ушит на ръка"],
     intro: `${site.brand} шие селвидж деним и работно облекло в малки номерирани серии във ${site.city.bg}. Всеки шев е завършен на ръка, за да може всяка дреха да се износи точно по теб.`,
     cta: "Разгледай денима",
-    delivery: `Безплатна доставка в България за поръчки над ${eur(shipping.freeFrom)}`,
+    delivery: `Безплатна доставка в България за поръчки над ${eur(shipping.freeFrom)}`,
     specsLabel: "Как е направено",
     specs: ["14 oz селвидж", "Подгъви с верижен бод", "Медни нитове"],
     figure: "Фиг. 01 · Заден джоб, Лот 001",
@@ -637,8 +638,9 @@ const bg: Dict = {
   loader: { loading: "Зареждане на магазина", stitching: "Шием колекцията" },
   scroll: "Позиция в страницата",
   success: {
-    metaTitle: "Поръчката е потвърдена",
+    metaTitle: "Твоята поръчка",
     eyebrow: "Поръчката е потвърдена",
+    missingEyebrow: "Твоята поръчка",
     paidTitle: "Благодарим, вече я опаковаме",
     missingTitle: "Не намерихме тази поръчка",
     paidText: (email) =>
