@@ -36,7 +36,7 @@ function LinkLabel({ link }: { link: NavLink }) {
   return (
     <>
       <span className="sr-only">{link.label}</span>
-      <Wordmark dot="red" className="[&>.sr-only]:hidden" />
+      <Wordmark dot="red" className="label-tag patch-denim px-2.5 py-1 shadow-[2px_2px_0_rgb(0_0_0/0.3)] [&>.sr-only]:hidden" />
     </>
   );
 }

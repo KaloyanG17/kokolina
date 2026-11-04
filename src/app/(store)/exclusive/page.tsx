@@ -27,7 +27,7 @@ export default async function ExclusivePage() {
             <span aria-hidden className="size-2 rounded-full bg-dot" />
             {copy.eyebrow}
           </p>
-          <Wordmark dot="red" className="label-tag patch heading-3 md:heading-1 px-6 py-3 md:px-10 md:py-5" />
+          <Wordmark dot="red" className="label-tag patch-denim heading-3 md:heading-1 px-6 py-3 md:px-10 md:py-5" />
           <h1 id="exclusive-title" className="heading-4 md:heading-2 max-w-[680px] text-cotton">
             {copy.title}
           </h1>
