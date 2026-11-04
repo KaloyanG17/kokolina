@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getAdmin } from "@/lib/admin";
 import { has } from "@/lib/env";
 import { formatPrice } from "@/lib/format";
+import { getProducts } from "@/lib/catalog";
+import { ProductPicture } from "@/components/product-picture";
 import { Notice, PageHeader } from "@/components/admin/ui";
 import { setOrderStatus } from "../../actions";
 
@@ -10,7 +12,7 @@ export const metadata: Metadata = { title: "Orders" };
 const dateFmt = new Intl.DateTimeFormat("en-IE", { dateStyle: "medium", timeStyle: "short" });
 const STATUSES = ["paid", "fulfilled", "refunded", "cancelled"] as const;
 
-type OrderItem = { name: string; size: string; qty: number; unitAmount: number };
+type OrderItem = { slug?: string; name: string; size: string; qty: number; unitAmount: number };
 type Address = { name?: string; address?: { line1?: string; line2?: string; city?: string; postal_code?: string; country?: string } } & {
   line1?: string;
   city?: string;
@@ -21,7 +23,10 @@ type Address = { name?: string; address?: { line1?: string; line2?: string; city
 export default async function Orders() {
   const result = await getAdmin();
   if (result.status !== "ok") return null;
-  const { data: orders, error } = await result.admin.db.from("orders").select("*").order("created_at", { ascending: false }).limit(100);
+  const [{ data: orders, error }, catalog] = await Promise.all([
+    result.admin.db.from("orders").select("*").order("created_at", { ascending: false }).limit(100),
+    getProducts(),
+  ]);
 
   return (
     <>
@@ -49,12 +54,22 @@ export default async function Orders() {
                   <p className="caption-5 font-mono text-muted">
                     {dateFmt.format(new Date(o.created_at))} · {o.email}
                   </p>
-                  <ul className="body-6">
-                    {items.map((i, n) => (
-                      <li key={n}>
-                        {i.qty} × {i.name} <span className="text-muted">size {i.size}</span>
-                      </li>
-                    ))}
+                  <ul className="flex flex-col gap-2">
+                    {items.map((i, n) => {
+                      const product = catalog.find((p) => p.slug === i.slug);
+                      return (
+                        <li key={n} className="body-6 flex items-center gap-3">
+                          <span className="h-14 w-10 shrink-0 overflow-hidden rounded-sm bg-surface-2">
+                            {product && (
+                              <ProductPicture product={product} idPrefix={`order-${o.id}-${n}`} sizes="40px" className="h-full w-full" />
+                            )}
+                          </span>
+                          <span>
+                            {i.qty} × {i.name} <span className="text-muted">size {i.size}</span>
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
                   {addr?.line1 && (
                     <p className="caption-2 text-muted">

@@ -24,7 +24,7 @@ export type Tone = "ink" | "light";
 const THREAD = "var(--color-thread)";
 const COPPER = "var(--color-copper)";
 
-function Patterns({ prefix, lineOpacity }: { prefix: string; lineOpacity: number }) {
+export function Patterns({ prefix, lineOpacity }: { prefix: string; lineOpacity: number }) {
   return (
     <>
       <pattern id={`${prefix}-lines`} width="8" height="5" patternUnits="userSpaceOnUse">

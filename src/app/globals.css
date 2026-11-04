@@ -184,6 +184,18 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  /*
+   * The gradient only paints inside the element's box, and headings use a
+   * line height of 1, so descenders (g, y, p) would be cut off. Extend the
+   * box below the text and pull the space back so layout does not move.
+   */
+  padding-bottom: 0.15em;
+  margin-bottom: -0.15em;
+}
+
+/* Solid cloth in the engraved garments; each drawing sets --paper for its tone */
+.paper {
+  fill: var(--paper, var(--color-base));
 }
 
 /* ---------- Shared components ---------- */

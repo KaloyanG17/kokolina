@@ -69,21 +69,26 @@ ${textToHtml(`Thanks for joining. We will write when the next lot comes off the 
   });
 }
 
-export type OrderEmailItem = { name: string; size: string; qty: number; unitAmount: number };
+export type OrderEmailItem = { name: string; size: string; qty: number; unitAmount: number; image?: string | null };
 
 export async function sendOrderConfirmation(to: string, order: { reference: string; items: OrderEmailItem[]; total: number }) {
   const r = resend();
   if (!r) return { skipped: true as const };
   const rows = order.items
     .map(
-      (i) => `<tr><td style="padding:8px 0;border-bottom:1px dashed #d6cdb9;">${esc(i.name)}<br/><span style="color:#5c6070;font-size:12px;">Size ${esc(i.size)} · Qty ${i.qty}</span></td>
+      (i) => `<tr><td width="64" style="padding:8px 12px 8px 0;border-bottom:1px dashed #d6cdb9;">${
+        i.image
+          ? `<img src="${esc(i.image)}" width="56" height="75" alt="${esc(i.name)}" style="display:block;width:56px;height:75px;object-fit:cover;border:1px solid #d6cdb9;background:#ebe5d8;" />`
+          : ""
+      }</td>
+<td style="padding:8px 0;border-bottom:1px dashed #d6cdb9;">${esc(i.name)}<br/><span style="color:#5c6070;font-size:12px;">Size ${esc(i.size)} · Qty ${i.qty}</span></td>
 <td align="right" style="padding:8px 0;border-bottom:1px dashed #d6cdb9;font-family:monospace;">${formatPrice(i.unitAmount * i.qty)}</td></tr>`,
     )
     .join("");
   const body = `<h1 style="margin:0 0 16px;font-size:24px;line-height:32px;">Thank you, your order is in</h1>
 ${textToHtml(`We have your order and will pack it in the studio. You will get another email with tracking when it leaves, within ${site.shippingDays}.`)}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;line-height:20px;">${rows}
-<tr><td style="padding:12px 0;font-weight:600;">Total</td><td align="right" style="padding:12px 0;font-weight:600;font-family:monospace;">${formatPrice(order.total)}</td></tr></table>
+<tr><td colspan="2" style="padding:12px 0;font-weight:600;">Total</td><td align="right" style="padding:12px 0;font-weight:600;font-family:monospace;">${formatPrice(order.total)}</td></tr></table>
 <p style="margin:16px 0 0;font-size:12px;color:#5c6070;font-family:monospace;">Reference ${esc(order.reference)}</p>`;
   return r.emails.send({
     from: env.emailFrom,
