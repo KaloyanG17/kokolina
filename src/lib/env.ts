@@ -22,12 +22,12 @@ export const env = {
 
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
   supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
-  supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
+  supabaseServiceKey: (process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim(),
 
-  stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
-  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
+  stripeSecretKey: (process.env.STRIPE_SECRET_KEY ?? "").trim(),
+  stripeWebhookSecret: (process.env.STRIPE_WEBHOOK_SECRET ?? "").trim(),
 
-  resendApiKey: process.env.RESEND_API_KEY ?? "",
+  resendApiKey: (process.env.RESEND_API_KEY ?? "").trim(),
   emailFrom: process.env.EMAIL_FROM ?? "",
   adminNotifyEmail: process.env.ADMIN_NOTIFY_EMAIL ?? "",
 };
