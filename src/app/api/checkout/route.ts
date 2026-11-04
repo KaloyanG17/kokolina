@@ -55,6 +55,10 @@ export async function POST(req: Request) {
   }
 
   const origin = env.siteUrl.replace(/\/$/, "");
+  // Picture shown next to each item in Stripe Checkout: the first photo, or the engraved drawing as a PNG
+  const imageFor = (slug: string) =>
+    catalog.find((p) => p.slug === slug)?.images?.[0]?.url ?? `${origin}/api/product-image/${slug}`;
+
   const session = await s.checkout.sessions.create({
     mode: "payment",
     line_items: items.map((i) => ({
@@ -62,7 +66,12 @@ export async function POST(req: Request) {
       price_data: {
         currency: "eur",
         unit_amount: i.unitAmount,
-        product_data: { name: i.name, description: `Size ${i.size}`, metadata: { slug: i.slug, size: i.size } },
+        product_data: {
+          name: i.name,
+          description: `Size ${i.size}`,
+          images: [imageFor(i.slug)],
+          metadata: { slug: i.slug, size: i.size },
+        },
       },
     })),
     shipping_address_collection: { allowed_countries: [...SHIPPING_COUNTRIES] },

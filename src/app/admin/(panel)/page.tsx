@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getAdmin } from "@/lib/admin";
 import { formatPrice } from "@/lib/format";
 import { PageHeader } from "@/components/admin/ui";
+import { LiveRefresh } from "@/components/admin/live-refresh";
 
 export default async function AdminOverview() {
   const result = await getAdmin();
@@ -30,6 +31,7 @@ export default async function AdminOverview() {
   return (
     <>
       <PageHeader title="Overview" intro="What needs attention in the shop today." />
+      <LiveRefresh />
       <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map((s) => (
           <li key={s.label}>

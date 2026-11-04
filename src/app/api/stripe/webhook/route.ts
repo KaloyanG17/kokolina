@@ -31,7 +31,10 @@ export async function POST(req: Request) {
   if (session.payment_status !== "paid") return NextResponse.json({ received: true });
 
   // Line items carry the authoritative names and amounts Stripe charged
-  const lineItems = await s.checkout.sessions.listLineItems(session.id, { limit: 100 });
+  const lineItems = await s.checkout.sessions.listLineItems(session.id, {
+    limit: 100,
+    expand: ["data.price.product"],
+  });
   const meta: [string, string, number, number][] = (() => {
     try {
       return JSON.parse(session.metadata?.items ?? "[]");
@@ -39,13 +42,19 @@ export async function POST(req: Request) {
       return [];
     }
   })();
-  const items = lineItems.data.map((li, i) => ({
-    slug: meta[i]?.[0] ?? "",
-    size: meta[i]?.[1] ?? "",
-    name: li.description ?? "",
-    qty: li.quantity ?? 1,
-    unitAmount: (li.price?.unit_amount ?? 0) / 100,
-  }));
+  const items = lineItems.data.map((li, i) => {
+    // Slug, size and picture were set on the Stripe product at checkout; the session metadata is a fallback
+    const product = li.price?.product;
+    const p = product && typeof product === "object" && "metadata" in product ? product : null;
+    return {
+      slug: p?.metadata?.slug ?? meta[i]?.[0] ?? "",
+      size: p?.metadata?.size ?? meta[i]?.[1] ?? "",
+      name: li.description ?? "",
+      qty: li.quantity ?? 1,
+      unitAmount: (li.price?.unit_amount ?? 0) / 100,
+      image: p?.images?.[0] ?? null,
+    };
+  });
 
   const email = session.customer_details?.email ?? null;
   const { data: inserted, error } = await db
