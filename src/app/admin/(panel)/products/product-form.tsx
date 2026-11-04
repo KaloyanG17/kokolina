@@ -31,13 +31,14 @@ export function ProductForm({ product }: { product?: ProductRow }) {
           hint="Lowercase words joined by dashes, used in the product URL."
           error={e.slug}
         />
-        <Field label="Category" name="category" as="select" defaultValue={p?.category ?? "Jeans"} error={e.category}>
-          {categories
-            .filter((c) => c !== "All")
-            .map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-        </Field>
+        <Field
+          label="Category"
+          name="category"
+          as="select"
+          defaultValue={p?.category ?? "Jeans"}
+          error={e.category}
+          options={categories.filter((c) => c !== "All").map((c) => ({ value: c, label: c }))}
+        />
         <Field label="Display order" name="sort" type="number" defaultValue={p?.sort ?? 0} hint="Lower numbers show first." error={e.sort} />
       </fieldset>
 
@@ -83,16 +84,22 @@ export function ProductForm({ product }: { product?: ProductRow }) {
 
       <fieldset className="grid grid-cols-1 gap-4 rounded-md border border-line bg-surface p-6 sm:grid-cols-2">
         <legend className="title-3 px-2">Drawing shown until photos are added</legend>
-        <Field label="Garment drawing" name="art" as="select" defaultValue={p?.art ?? "jeans"} error={e.art}>
-          {ARTS.map((a) => (
-            <option key={a}>{a}</option>
-          ))}
-        </Field>
-        <Field label="Wash" name="wash" as="select" defaultValue={p?.wash ?? "rinse"} error={e.wash}>
-          {WASHES.map((w) => (
-            <option key={w}>{w}</option>
-          ))}
-        </Field>
+        <Field
+          label="Garment drawing"
+          name="art"
+          as="select"
+          defaultValue={p?.art ?? "jeans"}
+          error={e.art}
+          options={ARTS.map((a) => ({ value: a, label: a }))}
+        />
+        <Field
+          label="Wash"
+          name="wash"
+          as="select"
+          defaultValue={p?.wash ?? "rinse"}
+          error={e.wash}
+          options={WASHES.map((w) => ({ value: w, label: w }))}
+        />
       </fieldset>
 
       <div className="flex gap-2">

@@ -6,6 +6,7 @@ import { MagnifyingGlass, X } from "@phosphor-icons/react";
 import { categories, type Category, type Product } from "@/data/products";
 import { useT } from "@/i18n/client";
 import type { Dict } from "@/i18n/dictionaries";
+import { Dropdown } from "./dropdown";
 import { ProductGrid } from "./product-card";
 
 type Sort = keyof Dict["shop"]["sorts"];
@@ -90,20 +91,18 @@ export function ShopBrowser({ products }: { products: Product[] }) {
               </button>
             )}
           </label>
-          <label className="flex items-center gap-2 rounded-sm border border-line bg-base px-4 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink">
-            <span className="caption-1 shrink-0 text-muted">{t.shop.sort}</span>
-            <select
+          <div className="flex items-center gap-2 md:w-72">
+            <span aria-hidden className="caption-1 shrink-0 text-muted">
+              {t.shop.sort}
+            </span>
+            <Dropdown
               value={sort}
-              onChange={(e) => update({ sort: e.target.value })}
-              className="title-4 flex-1 cursor-pointer bg-transparent py-2 focus:outline-none"
-            >
-              {SORTS.map((value) => (
-                <option key={value} value={value}>
-                  {t.shop.sorts[value]}
-                </option>
-              ))}
-            </select>
-          </label>
+              onChange={(v) => update({ sort: v })}
+              label={t.shop.sort}
+              options={SORTS.map((value) => ({ value, label: t.shop.sorts[value] }))}
+              className="flex-1"
+            />
+          </div>
         </div>
 
         <div role="group" aria-label={t.shop.filter} className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0">

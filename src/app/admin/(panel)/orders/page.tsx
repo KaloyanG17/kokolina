@@ -3,6 +3,7 @@ import { getAdmin } from "@/lib/admin";
 import { has } from "@/lib/env";
 import { formatPrice } from "@/lib/format";
 import { getProducts } from "@/lib/catalog";
+import { Dropdown } from "@/components/dropdown";
 import { ProductPicture } from "@/components/product-picture";
 import { Notice, PageHeader } from "@/components/admin/ui";
 import { LiveRefresh } from "@/components/admin/live-refresh";
@@ -86,18 +87,13 @@ export default async function Orders() {
                     <label htmlFor={`status-${o.id}`} className="sr-only">
                       Order status
                     </label>
-                    <select
+                    <Dropdown
                       id={`status-${o.id}`}
                       name="status"
                       defaultValue={o.status}
-                      className="caption-1 rounded-sm border border-line bg-surface px-2 py-1"
-                    >
-                      {STATUSES.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                    </select>
+                      options={STATUSES.map((s) => ({ value: s, label: s }))}
+                      className="w-36"
+                    />
                     <button type="submit" className="btn-secondary button-sm px-3 py-1">
                       Update
                     </button>

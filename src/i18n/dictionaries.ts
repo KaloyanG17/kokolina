@@ -273,9 +273,17 @@ const en = {
   },
   notFound: {
     eyebrow: "Page not found",
-    title: ["This piece is", "no longer here"],
+    title: ["This piece is", "no longer here"] as [string, string],
     text: "The link may be old, or the page has moved. The current collection is one click away.",
     cta: "Shop the collection",
+    home: "Home",
+  },
+  errorPage: {
+    eyebrow: "Seam came loose",
+    title: ["Something tore", "while loading"] as [string, string],
+    text: "The error has been reported and we are stitching it back. Try again, or head back to the shop.",
+    retry: "Try again",
+    home: "Back to the shop",
   },
   legal: {
     back: "Back to the shop",
@@ -593,6 +601,14 @@ const bg: Dict = {
     title: ["Тази дреха", "вече не е тук"],
     text: "Линкът може да е стар или страницата е преместена. Текущата колекция е на един клик разстояние.",
     cta: "Разгледай колекцията",
+    home: "Начало",
+  },
+  errorPage: {
+    eyebrow: "Разпран шев",
+    title: ["Нещо се скъса", "при зареждането"],
+    text: "Грешката е докладвана и вече я зашиваме. Опитай отново или се върни към магазина.",
+    retry: "Опитай отново",
+    home: "Обратно към магазина",
   },
   legal: {
     back: "Обратно към магазина",

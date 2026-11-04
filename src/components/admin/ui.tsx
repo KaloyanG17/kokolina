@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
+import { Dropdown, type DropdownOption } from "@/components/dropdown";
 
 export function PageHeader({ title, intro, children }: { title: string; intro?: string; children?: React.ReactNode }) {
   return (
@@ -44,6 +45,7 @@ export function Field({
   error,
   hint,
   as = "input",
+  options = [],
   className = "",
   ...props
 }: {
@@ -52,6 +54,8 @@ export function Field({
   error?: string;
   hint?: string;
   as?: "input" | "textarea" | "select";
+  /** Choices when as is "select". */
+  options?: DropdownOption[];
   className?: string;
   children?: React.ReactNode;
 } & React.InputHTMLAttributes<HTMLInputElement> &
@@ -74,7 +78,14 @@ export function Field({
       {as === "textarea" ? (
         <textarea {...shared} {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)} />
       ) : as === "select" ? (
-        <select {...shared} {...(props as React.SelectHTMLAttributes<HTMLSelectElement>)} />
+        <Dropdown
+          id={id}
+          name={name}
+          options={options}
+          defaultValue={props.defaultValue === undefined ? undefined : String(props.defaultValue)}
+          invalid={Boolean(error)}
+          describedBy={describedBy}
+        />
       ) : (
         <input {...shared} {...(props as React.InputHTMLAttributes<HTMLInputElement>)} />
       )}
