@@ -311,10 +311,10 @@ export function ProductArt({
             {/* Photos shot on white blend into the wall in the light theme */}
             <image
               href={photo}
-              x="-10"
+              x="0"
               y="22"
-              width="220"
-              height="300"
+              width="200"
+              height="272"
               preserveAspectRatio="xMidYMin meet"
               className="mix-blend-multiply dark:mix-blend-normal"
             />
