@@ -100,16 +100,19 @@ ${textToHtml(`We have your order and will pack it in the studio. You will get an
 
 export async function notifyAdminOfOrder(order: { reference: string; email: string; total: number; itemCount: number }) {
   const r = resend();
-  if (!r || !env.adminNotifyEmail) return { skipped: true as const };
-  return r.emails.send({
-    from: env.emailFrom,
-    to: env.adminNotifyEmail,
-    subject: `New order: ${formatPrice(order.total)} from ${order.email}`,
-    html: layout(
-      textToHtml(`${order.itemCount} piece(s), ${formatPrice(order.total)}.\n\nReference ${order.reference}.\n\nOpen the admin to pack it: ${env.siteUrl}/admin/orders`),
-      "Sent to the shop owner only.",
+  // ADMIN_NOTIFY_EMAIL may list several addresses separated by commas
+  const recipients = env.adminNotifyEmail.split(",").map((e) => e.trim()).filter(Boolean);
+  if (!r || !recipients.length) return { skipped: true as const };
+  const html = layout(
+    textToHtml(`${order.itemCount} piece(s), ${formatPrice(order.total)}.\n\nReference ${order.reference}.\n\nOpen the admin to pack it: ${env.siteUrl}/admin/orders`),
+    "Sent to the shop team only.",
+  );
+  // One send per person, so an address Resend refuses does not block the others
+  return Promise.all(
+    recipients.map((to) =>
+      r.emails.send({ from: env.emailFrom, to, subject: `New order: ${formatPrice(order.total)} from ${order.email}`, html }),
     ),
-  });
+  );
 }
 
 /**

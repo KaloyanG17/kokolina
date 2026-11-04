@@ -33,7 +33,7 @@ published products and pictures. Writes from the admin are checked against
 1. Add and verify your sending domain in Resend (DNS records).
 2. Create an API key: `RESEND_API_KEY`.
 3. Set `EMAIL_FROM`, for example `Kokolina <hello@yourdomain.com>`.
-4. Optional: `ADMIN_NOTIFY_EMAIL` gets an alert for every order.
+4. Optional: `ADMIN_NOTIFY_EMAIL` gets an alert for every order. List several addresses with commas, e.g. `you@example.com,partner@example.com`.
 
 Newsletters are written and sent from **/admin/newsletter**. Send a test to
 yourself first. Each email carries a one click unsubscribe link.
