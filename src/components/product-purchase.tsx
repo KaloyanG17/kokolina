@@ -47,7 +47,7 @@ export function ProductPurchase({ product }: { product: Product }) {
                 aria-describedby={error ? "size-error" : undefined}
                 className="peer sr-only"
               />
-              <span className="title-4 flex h-12 min-w-12 cursor-pointer items-center justify-center rounded-sm border border-line bg-surface px-3 transition-[background-color,color,transform] duration-300 ease-brand hover:border-ink-soft hover:bg-surface-2 active:scale-[0.98] peer-checked:border-indigo peer-checked:bg-indigo peer-checked:text-cotton peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink">
+              <span className="title-4 flex h-12 min-w-12 cursor-pointer items-center justify-center rounded-sm border border-line bg-surface px-3 transition-[background-color,color,scale] duration-150 ease-brand hover:border-ink-soft hover:bg-surface-2 active:scale-[0.98] peer-checked:border-indigo peer-checked:bg-indigo peer-checked:text-cotton peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink">
                 {s}
               </span>
             </label>

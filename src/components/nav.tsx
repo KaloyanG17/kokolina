@@ -84,9 +84,9 @@ function MenuLinks({ active, open, onPick }: { active: string | null; open: bool
       {[...navLinks(t), ...menuOnlyLinks(t)].map((l, i) => (
         <li
           key={l.key}
-          style={{ transitionDelay: open ? `${Math.min(i * 60, 400)}ms` : "0ms" }}
-          className={`transition-[opacity,transform] duration-500 ease-brand ${
-            open ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
+          style={{ transitionDelay: open ? `${Math.min(i * 40, 200)}ms` : "0ms" }}
+          className={`transition-[opacity,translate] duration-300 ease-brand ${
+            open ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
           }`}
         >
           <Link
@@ -100,8 +100,8 @@ function MenuLinks({ active, open, onPick }: { active: string | null; open: bool
         </li>
       ))}
       <li
-        style={{ transitionDelay: open ? "400ms" : "0ms" }}
-        className={`pt-4 transition-[opacity,transform] duration-500 ease-brand ${open ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"}`}
+        style={{ transitionDelay: open ? "240ms" : "0ms" }}
+        className={`pt-4 transition-[opacity,translate] duration-300 ease-brand ${open ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}
       >
         <LanguageSwitch className="w-fit" />
       </li>
@@ -188,13 +188,13 @@ export function Nav() {
           >
             <span
               aria-hidden
-              className={`absolute h-0.5 w-4 rounded-full bg-fg transition-transform duration-500 ease-brand ${
+              className={`absolute h-0.5 w-4 rounded-full bg-fg transition-transform duration-300 ease-brand ${
                 menuOpen ? "rotate-45" : "-translate-y-1"
               }`}
             />
             <span
               aria-hidden
-              className={`absolute h-0.5 w-4 rounded-full bg-fg transition-transform duration-500 ease-brand ${
+              className={`absolute h-0.5 w-4 rounded-full bg-fg transition-transform duration-300 ease-brand ${
                 menuOpen ? "-rotate-45" : "translate-y-1"
               }`}
             />
@@ -205,7 +205,7 @@ export function Nav() {
       <div
         id="mobile-menu"
         inert={!menuOpen}
-        className={`fixed inset-0 z-40 bg-base/90 backdrop-blur-xl transition-opacity duration-500 ease-brand lg:hidden ${
+        className={`fixed inset-0 z-40 bg-base/90 backdrop-blur-xl transition-opacity duration-300 ease-brand lg:hidden ${
           menuOpen ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       >

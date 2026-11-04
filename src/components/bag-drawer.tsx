@@ -56,7 +56,7 @@ export function BagDrawer() {
             type="button"
             onClick={close}
             aria-label={bag.close}
-            className="focus-ring flex size-10 items-center justify-center rounded-sm transition-[background-color,transform] duration-300 ease-brand hover:bg-surface-3 active:scale-[0.98]"
+            className="focus-ring flex size-10 items-center justify-center rounded-sm transition-[background-color,scale] duration-150 ease-brand hover:bg-surface-3 active:scale-[0.98]"
           >
             <X size={20} aria-hidden />
           </button>

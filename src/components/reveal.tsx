@@ -34,7 +34,7 @@ export function Reveal({
   return (
     <Tag
       ref={ref}
-      className={`transition-[opacity,transform] duration-700 ease-brand motion-reduce:translate-y-0 ${
+      className={`transition-[opacity,translate] duration-600 ease-brand motion-reduce:translate-y-0 ${
         shown ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
       } ${className}`}
     >

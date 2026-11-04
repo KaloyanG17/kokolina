@@ -149,8 +149,11 @@ export function Dropdown({
         id={listId}
         role="listbox"
         aria-labelledby={buttonId}
-        hidden={!open}
-        className="stitched absolute left-0 right-0 z-50 mt-1 max-h-72 min-w-max overflow-y-auto rounded-md border border-line bg-surface p-2 shadow-[4px_5px_0_0_var(--color-surface-3)] [--stitch:var(--color-thread)]"
+        className={`stitched absolute left-0 right-0 z-50 mt-1 max-h-72 min-w-max origin-top overflow-y-auto rounded-md border border-line bg-surface p-2 shadow-[4px_5px_0_0_var(--color-surface-3)] [--stitch:var(--color-thread)] transition-[opacity,scale,translate,visibility] ease-brand ${
+          open
+            ? "visible translate-y-0 scale-100 opacity-100 duration-150"
+            : "pointer-events-none invisible -translate-y-1 scale-[0.97] opacity-0 duration-100"
+        }`}
       >
         {options.map((o, i) => {
           const isSelected = o.value === value;

@@ -23,14 +23,14 @@ export function ProductCard({ product, idPrefix = "card" }: { product: Product; 
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="stitched group focus-ring flex h-full flex-col gap-4 rounded-md border border-line bg-surface p-2 pb-4 transition-[border-color,transform] duration-500 ease-brand [--stitch:var(--color-line)] hover:-translate-y-1 hover:border-ink/40 hover:[--stitch:var(--color-thread)] active:scale-[0.98]"
+      className="stitched group focus-ring flex h-full flex-col gap-4 rounded-md border border-line bg-surface p-2 pb-4 transition-[border-color,translate,scale] duration-250 ease-brand [--stitch:var(--color-line)] hover:-translate-y-1 hover:border-ink/40 hover:[--stitch:var(--color-thread)] active:scale-[0.98]"
     >
       <div className="relative overflow-hidden rounded-sm bg-surface-2">
         <ProductPicture
           product={product}
           idPrefix={idPrefix}
           sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-          className="aspect-[3/4] w-full transition-transform duration-500 ease-brand group-hover:scale-[1.03]"
+          className="aspect-[3/4] w-full transition-transform duration-300 ease-brand group-hover:scale-[1.03]"
         />
         <span className="caption-3 absolute left-2 top-2 rounded-md bg-cotton/90 px-2 py-1 font-mono uppercase tracking-wider text-ink-deep">
           {product.lot}

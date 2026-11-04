@@ -48,12 +48,16 @@ export const viewport: Viewport = {
 // Runs before paint: applies the saved theme, or the system one, with no flash
 const themeScript = `(function(){var d=document.documentElement,m=window.matchMedia("(prefers-color-scheme: dark)"),s=null;try{s=localStorage.getItem("theme")}catch(e){}d.dataset.theme=s||(m.matches?"dark":"light");if(!s)m.addEventListener("change",function(e){try{if(localStorage.getItem("theme"))return}catch(x){}d.dataset.theme=e.matches?"dark":"light"})})()`;
 
+// Runs before paint: hides the intro loader after the first visit of the session
+const introScript = `(function(){try{if(sessionStorage.getItem("kokolina-intro"))document.documentElement.dataset.intro="seen"}catch(e){}})()`;
+
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const locale = await getLocale();
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: introScript }} />
         <noscript>
           <style>{"#loading-screen{display:none}"}</style>
         </noscript>

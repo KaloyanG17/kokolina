@@ -117,7 +117,7 @@ export async function Faq() {
                 <details className="group rounded-md border border-line bg-surface transition-colors duration-300 ease-brand open:border-ink/30 open:bg-surface-2">
                   <summary className="title-3 focus-ring flex cursor-pointer list-none items-center justify-between gap-4 rounded-md p-6 [&::-webkit-details-marker]:hidden">
                     {f.q}
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-line transition-[transform,background-color] duration-500 ease-brand group-open:rotate-45 group-open:bg-ink-deep group-open:text-thread">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-line transition-[rotate,background-color] duration-300 ease-brand group-open:rotate-45 group-open:bg-ink-deep group-open:text-thread">
                       <Plus size={14} aria-hidden />
                     </span>
                   </summary>

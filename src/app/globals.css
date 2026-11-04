@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* The animation plans quote old class names; keep them out of the build */
+@source not "../../plans";
 
 /* Dark theme follows data-theme on <html>, set before paint in the layout */
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
@@ -211,8 +213,13 @@
   .btn-secondary,
   .label-tag {
     @apply relative inline-flex items-center justify-center gap-2 rounded-sm px-4 py-2 uppercase tracking-[0.08em]
-      transition-[background-color,color,transform] duration-300 ease-brand
       focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink;
+    /* Colour eases at 300ms; the lift and press respond faster, at 160ms */
+    transition:
+      background-color 300ms var(--ease-brand),
+      color 300ms var(--ease-brand),
+      translate 160ms var(--ease-brand),
+      scale 160ms var(--ease-brand);
     background-image: var(--weave);
   }
   .btn-primary,
@@ -341,6 +348,11 @@ select,
 option {
   background-color: var(--color-surface);
   color: var(--color-fg);
+}
+
+/* The intro loader only plays on the first page load of a session (see introScript in the root layout) */
+[data-intro="seen"] #loading-screen {
+  display: none;
 }
 
 /* The stitched rail on the right replaces the native scrollbar */

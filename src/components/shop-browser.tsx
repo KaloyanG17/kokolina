@@ -112,7 +112,7 @@ export function ShopBrowser({ products }: { products: Product[] }) {
               type="button"
               aria-pressed={category === c}
               onClick={() => update({ category: c })}
-              className={`title-4 focus-ring shrink-0 rounded-sm border px-3 py-2 transition-[background-color,color,transform] duration-300 ease-brand active:scale-[0.98] ${
+              className={`title-4 focus-ring shrink-0 rounded-sm border px-3 py-2 transition-[background-color,color,scale] duration-150 ease-brand active:scale-[0.98] ${
                 category === c ? "border-indigo bg-indigo text-cotton" : "border-line text-muted hover:bg-surface-3 hover:text-fg"
               }`}
             >

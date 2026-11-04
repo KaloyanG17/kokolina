@@ -105,7 +105,7 @@ function QtyButton({ label, onClick, children }: { label: string; onClick: () =>
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="focus-ring flex size-6 items-center justify-center rounded-sm transition-[background-color,transform] duration-300 ease-brand hover:bg-surface-3 active:scale-[0.98]"
+      className="focus-ring flex size-6 items-center justify-center rounded-sm transition-[background-color,scale] duration-150 ease-brand hover:bg-surface-3 active:scale-[0.98]"
     >
       {children}
     </button>
@@ -126,9 +126,9 @@ export function FreeShippingBar({ subtotal }: { subtotal: number }) {
       </p>
       <div aria-hidden className="relative h-2 overflow-hidden rounded-full bg-surface-3">
         <div
-          className="h-full rounded-full transition-[width] duration-700 ease-brand"
+          className="h-full w-full transition-[clip-path] duration-400 ease-brand"
           style={{
-            width: `${share * 100}%`,
+            clipPath: `inset(0 ${(1 - share) * 100}% 0 0 round 9999px)`,
             backgroundImage: "repeating-linear-gradient(90deg, var(--color-thread) 0 10px, transparent 10px 15px)",
           }}
         />

@@ -102,14 +102,21 @@ export function StitchLoader({ className = "", label }: { className?: string; la
 }
 
 /**
- * Full screen loader shown on every page load. Stays at least one stitch
- * cycle so the animation reads, then lifts away.
+ * Full screen loader shown on the first page load of a session. Stays at
+ * least one stitch cycle so the animation reads, then lifts away.
  */
 export function LoadingScreen() {
   const { loader } = useT();
   const [phase, setPhase] = useState<"show" | "leaving" | "gone">("show");
 
   useEffect(() => {
+    // Already seen this session: no intro, start the hero straight away
+    if (document.documentElement.dataset.intro === "seen") {
+      (window as Window & { __kokolinaLoaded?: boolean }).__kokolinaLoaded = true;
+      window.dispatchEvent(new Event("kokolina:loaded"));
+      setPhase("gone");
+      return;
+    }
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const minTime = new Promise((r) => setTimeout(r, reduce ? 500 : CYCLE * 1000));
     const loaded = new Promise((r) =>
@@ -117,6 +124,11 @@ export function LoadingScreen() {
     );
     let t: ReturnType<typeof setTimeout>;
     Promise.all([minTime, loaded]).then(() => {
+      try {
+        sessionStorage.setItem("kokolina-intro", "1");
+      } catch {
+        // Storage blocked: the intro will show again next load
+      }
       setPhase("leaving");
       // Lets the hero start sewing as the loader lifts
       (window as Window & { __kokolinaLoaded?: boolean }).__kokolinaLoaded = true;
@@ -132,7 +144,7 @@ export function LoadingScreen() {
     <div
       id="loading-screen"
       aria-busy={phase === "show"}
-      className={`denim fixed inset-0 z-[200] flex flex-col items-center justify-center gap-6 px-6 transition-[opacity,transform] duration-700 ease-brand ${
+      className={`denim fixed inset-0 z-[200] flex flex-col items-center justify-center gap-6 px-6 transition-[opacity,translate] duration-700 ease-brand ${
         phase === "leaving" ? "pointer-events-none -translate-y-8 opacity-0" : "opacity-100"
       }`}
     >
