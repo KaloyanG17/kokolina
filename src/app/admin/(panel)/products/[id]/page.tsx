@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdmin } from "@/lib/admin";
 import type { ProductRow } from "@/lib/catalog";
 import { mediaUrl } from "@/lib/supabase/server";
 import { Notice, PageHeader } from "@/components/admin/ui";
+import { ProductArt, type GarmentKind, type Wash } from "@/components/product-art";
 import { deleteProduct, updateProductImage } from "../../../actions";
 import { ProductForm } from "../product-form";
 import { ImageUpload } from "./image-upload";
@@ -52,7 +52,9 @@ export default async function EditProduct({
           <h2 id="photos-title" className="title-2">
             Photos
           </h2>
-          <p className="body-6 text-muted">The first photo is shown on cards. Without photos, the engraved drawing is used.</p>
+          <p className="body-6 text-muted">
+            The main photo hangs on the hook in the shop, exactly as previewed here. Without photos, the engraved drawing is used.
+          </p>
         </div>
 
         {images?.length ? (
@@ -60,7 +62,14 @@ export default async function EditProduct({
             {images.map((img, i) => (
               <li key={img.id} className="flex flex-col gap-2 rounded-sm border border-line bg-base p-2">
                 <div className="relative aspect-[3/4] overflow-hidden rounded-sm bg-surface-2">
-                  <Image src={mediaUrl(img.path)!} alt={img.alt || p.name} fill sizes="200px" className="object-cover" />
+                  <ProductArt
+                    kind={p.art as GarmentKind}
+                    wash={p.wash as Wash}
+                    id={`admin-${img.id}`}
+                    photo={mediaUrl(img.path)!}
+                    label={img.alt || p.name}
+                    className="h-full w-full"
+                  />
                   {i === 0 && (
                     <span className="caption-3 absolute left-2 top-2 rounded-sm bg-ink-deep px-2 py-1 font-mono uppercase text-cotton">
                       Main

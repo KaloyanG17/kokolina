@@ -284,12 +284,15 @@ export function ProductArt({
   wash,
   id,
   label,
+  photo,
   className = "",
 }: {
   kind: GarmentKind;
   wash: Wash;
   id: string;
   label: string;
+  /** An uploaded photo hangs on the same hook in place of the drawing. Cut-outs on a transparent background look best. */
+  photo?: string;
   className?: string;
 }) {
   return (
@@ -298,7 +301,27 @@ export function ProductArt({
       <line x1="0" x2="300" y1="52" y2="52" stroke="currentColor" strokeWidth="2.5" />
       <line x1="0" x2="300" y1="58" y2="58" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.5" />
       <g transform="translate(50 48)">
-        <Garment kind={kind} wash={wash} id={id} />
+        {photo ? (
+          <>
+            {/* Hook and hanger; the garment's shoulders cover the bar as on a real hanger */}
+            <g stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" strokeLinecap="round" fill="none">
+              <path d="M100 2 a7 7 0 1 1 7 8 C104 12 100 14 100 20" />
+              <path d="M100 20 L42 40 L158 40 Z" />
+            </g>
+            {/* Photos shot on white blend into the wall in the light theme */}
+            <image
+              href={photo}
+              x="-10"
+              y="22"
+              width="220"
+              height="300"
+              preserveAspectRatio="xMidYMin meet"
+              className="mix-blend-multiply dark:mix-blend-normal"
+            />
+          </>
+        ) : (
+          <Garment kind={kind} wash={wash} id={id} />
+        )}
       </g>
       <rect y="372" width="300" height="28" fill="url(#eng-dense)" fillOpacity="0.22" />
       <line x1="0" x2="300" y1="372" y2="372" stroke="currentColor" strokeOpacity="0.6" />
