@@ -30,6 +30,7 @@ function footerColumns(t: Dict): { title: string; items: { label: string; href: 
         { label: t.nav.yourBag, href: "/bag" },
         { label: t.footer.ordering, href: "/#ordering" },
         { label: t.footer.sizing, href: "/#faq" },
+        { label: t.footer.returns, href: "/returns" },
         { label: t.footer.terms, href: "/terms" },
       ],
     },

@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Handbag } from "@phosphor-icons/react";
-import type { Product } from "@/data/products";
+import { stockFor, type Product } from "@/data/products";
 import { useT } from "@/i18n/client";
 import { formatPrice } from "@/lib/format";
 import { useBag } from "./bag-provider";
+import { SizeGuide } from "./size-guide";
 
 export function ProductPurchase({ product }: { product: Product }) {
   const { product: copy } = useT();
@@ -33,6 +34,10 @@ export function ProductPurchase({ product }: { product: Product }) {
     );
   }
 
+  // Only per size counts disable a size; a product without them sells every size from its total
+  const left = (s: string) => (product.sizeStock ? stockFor(product, s) : undefined);
+  const selectedLeft = size ? left(size) : undefined;
+
   function onAdd() {
     if (!size) {
       setError(copy.chooseSize);
@@ -47,7 +52,7 @@ export function ProductPurchase({ product }: { product: Product }) {
     <div className="flex flex-col gap-4">
       <fieldset ref={sizesRef} className="flex flex-col gap-2">
         {/* The error sits beside the label, so showing it never moves the page */}
-        <legend className="title-4 mb-2 flex flex-wrap items-baseline gap-x-3">
+        <legend className="title-4 mb-2 flex w-full flex-wrap items-baseline gap-x-3">
           <span>
             {copy.size}
             {size && <span className="text-muted">: {size}</span>}
@@ -57,14 +62,23 @@ export function ProductPurchase({ product }: { product: Product }) {
               {error}
             </span>
           )}
+          {!error && typeof selectedLeft === "number" && selectedLeft > 0 && selectedLeft <= 3 && (
+            <span className="caption-1 text-thread">{copy.fewLeft(selectedLeft)}</span>
+          )}
+          <span className="ml-auto">
+            <SizeGuide sizes={product.sizes} hemmed={product.category === "Jeans" || product.category === "Overalls"} />
+          </span>
         </legend>
         <div className="flex flex-wrap gap-2">
-          {product.sizes.map((s) => (
+          {product.sizes.map((s) => {
+            const gone = left(s) === 0;
+            return (
             <label key={s}>
               <input
                 type="radio"
                 name="size"
                 value={s}
+                disabled={gone}
                 checked={size === s}
                 onChange={() => {
                   setSize(s);
@@ -74,14 +88,18 @@ export function ProductPurchase({ product }: { product: Product }) {
                 className="peer sr-only"
               />
               <span
-                className={`title-4 flex h-12 min-w-12 cursor-pointer items-center justify-center rounded-sm border bg-surface px-3 transition-[background-color,color,border-color,scale] duration-150 ease-brand hover:border-ink-soft hover:bg-surface-2 active:scale-[0.98] peer-checked:border-indigo peer-checked:bg-indigo peer-checked:text-cotton peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink ${
-                  error ? "border-danger" : "border-line"
+                className={`title-4 flex h-12 min-w-12 items-center justify-center rounded-sm border bg-surface px-3 transition-[background-color,color,border-color,scale] duration-150 ease-brand peer-checked:border-indigo peer-checked:bg-indigo peer-checked:text-cotton peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink ${
+                  gone
+                    ? "cursor-not-allowed border-dashed border-line text-muted line-through opacity-60"
+                    : `cursor-pointer hover:border-ink-soft hover:bg-surface-2 active:scale-[0.98] ${error ? "border-danger" : "border-line"}`
                 }`}
               >
                 {s}
+                {gone && <span className="sr-only">, {copy.sizeGone}</span>}
               </span>
             </label>
-          ))}
+            );
+          })}
         </div>
       </fieldset>
       <button ref={buttonRef} type="button" onClick={onAdd} className="btn-primary button-lg w-full py-3">

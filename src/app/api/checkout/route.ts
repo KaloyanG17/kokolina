@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getProducts } from "@/lib/catalog";
+import { stockFor, type Category } from "@/data/products";
 import { shippingFor, site } from "@/data/site";
 import { env } from "@/lib/env";
 import { dictionaries } from "@/i18n/dictionaries";
@@ -20,6 +21,9 @@ const Body = z.object({
     .max(30),
 });
 
+/** Categories we hem for free; checkout asks for the inside leg when one is in the bag. */
+const HEMMED: Category[] = ["Jeans", "Overalls"];
+
 /**
  * Creates a Stripe Checkout Session from the bag. Prices, names and stock
  * come from the catalogue on the server, never from the browser.
@@ -35,6 +39,8 @@ export async function POST(req: Request) {
 
   const catalog = await getProducts(locale);
   const items: CheckoutItem[] = [];
+  // Ask for the inside leg only when the bag holds something we hem
+  let hemming = false;
   for (const line of parsed.data.lines) {
     const product = catalog.find((p) => p.slug === line.productId);
     if (!product || !product.sizes.includes(line.size)) {
@@ -43,10 +49,22 @@ export async function POST(req: Request) {
     if (product.soldOut) {
       return NextResponse.json({ error: t.soldOut(product.name) }, { status: 409 });
     }
-    const wanted = items.filter((i) => i.slug === product.slug).reduce((n, i) => n + i.qty, 0) + line.qty;
-    if (typeof product.stock === "number" && wanted > product.stock) {
-      return NextResponse.json({ error: t.lowStock(product.stock, product.name) }, { status: 409 });
+    // Stock is checked per size when the product tracks sizes, otherwise against its total
+    const perSize = Boolean(product.sizeStock);
+    const left = stockFor(product, line.size);
+    const wanted =
+      items
+        .filter((i) => i.slug === product.slug && (!perSize || i.size === line.size))
+        .reduce((n, i) => n + i.qty, 0) + line.qty;
+    if (typeof left === "number" && wanted > left) {
+      const error = perSize
+        ? left > 0
+          ? t.lowSizeStock(left, product.name, line.size)
+          : t.sizeSoldOut(product.name, line.size)
+        : t.lowStock(left, product.name);
+      return NextResponse.json({ error }, { status: 409 });
     }
+    if (HEMMED.includes(product.category)) hemming = true;
     items.push({
       slug: product.slug,
       name: product.name,
@@ -98,6 +116,17 @@ export async function POST(req: Request) {
       },
     ],
     phone_number_collection: { enabled: true },
+    ...(hemming && {
+      custom_fields: [
+        {
+          key: "inseam",
+          label: { type: "custom" as const, custom: t.inseamLabel },
+          type: "numeric" as const,
+          optional: true,
+          numeric: { minimum_length: 2, maximum_length: 3 },
+        },
+      ],
+    }),
     billing_address_collection: "auto",
     // Compact copy of the order for the webhook (Stripe metadata values max 500 chars)
     metadata: {

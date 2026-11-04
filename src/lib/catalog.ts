@@ -27,6 +27,7 @@ export type ProductRow = {
   art: string;
   wash: string;
   stock: number;
+  size_stock?: Record<string, number> | null;
   is_new: boolean;
   sold_out: boolean;
   published: boolean;
@@ -36,6 +37,14 @@ export type ProductRow = {
 } & Partial<Record<`${Translated}_bg`, string | null>>;
 
 export function rowToProduct(r: ProductRow, locale: Locale = "en"): Product {
+  // Only sizes the product is still sold in count towards per size stock
+  const sizeStock = Object.fromEntries(
+    Object.entries(r.size_stock ?? {})
+      .filter(([size]) => r.sizes.includes(size))
+      .map(([size, n]) => [size, Math.max(0, Number(n) || 0)]),
+  );
+  const tracksSizes = Object.keys(sizeStock).length > 0;
+  const allSizesGone = tracksSizes && r.sizes.every((size) => (sizeStock[size] ?? 0) <= 0);
   const text = (field: Translated) => (locale === "bg" && r[`${field}_bg`]?.trim()) || r[field];
   const images = [...(r.product_images ?? [])]
     .sort((a, b) => a.sort - b.sort)
@@ -56,9 +65,10 @@ export function rowToProduct(r: ProductRow, locale: Locale = "en"): Product {
     art: r.art as GarmentKind,
     wash: r.wash as Wash,
     stock: r.stock,
+    sizeStock: tracksSizes ? sizeStock : undefined,
     images,
     isNew: r.is_new,
-    soldOut: r.sold_out || r.stock <= 0,
+    soldOut: r.sold_out || r.stock <= 0 || allSizesGone,
     exclusive: Boolean(r.exclusive),
   };
 }

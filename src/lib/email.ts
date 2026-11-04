@@ -71,6 +71,13 @@ const copy = {
     free: "Free",
     reference: "Reference",
     orderFooter: `Questions about your order? Reply to this email. Unworn pieces can be returned within ${site.returnDays} days.`,
+    hem: (cm: number) => `We will hem your jeans to an inside leg of ${cm} cm before they leave.`,
+    shippedSubject: `Your ${site.brand} order is on its way`,
+    shippedTitle: "Your parcel has left the studio",
+    shippedBody: "It is with the courier now and usually arrives in one to two working days.",
+    tracking: "Tracking number",
+    trackCta: "TRACK THE PARCEL",
+    shippedFooter: `Questions? Reply to this email. Changed your mind? You can return unworn pieces within ${site.returnDays} days of receiving them: ${env.siteUrl}/returns`,
   },
   bg: {
     listFooter: (url: string) =>
@@ -90,6 +97,13 @@ const copy = {
     free: "Безплатна",
     reference: "Номер",
     orderFooter: `Въпроси за поръчката? Отговори на този имейл. Неносени дрехи могат да бъдат върнати до ${site.returnDays} дни.`,
+    hem: (cm: number) => `Ще подгънем дънките ти на дължина на вътрешния шев ${cm} см, преди да тръгнат.`,
+    shippedSubject: `Поръчката ти от ${site.brand} е на път`,
+    shippedTitle: "Пратката ти тръгна от ателието",
+    shippedBody: "Вече е при куриера и обикновено пристига за един до два работни дни.",
+    tracking: "Номер за проследяване",
+    trackCta: "ПРОСЛЕДИ ПРАТКАТА",
+    shippedFooter: `Въпроси? Отговори на този имейл. Размисли ли? Можеш да върнеш неносени дрехи до ${site.returnDays} дни след получаването им: ${env.siteUrl}/returns`,
   },
 };
 
@@ -120,7 +134,7 @@ export type OrderEmailItem = { name: string; size: string; qty: number; unitAmou
 
 export async function sendOrderConfirmation(
   to: string,
-  order: { reference: string; items: OrderEmailItem[]; total: number; delivery?: number },
+  order: { reference: string; items: OrderEmailItem[]; total: number; delivery?: number; inseamCm?: number | null },
   locale?: unknown,
 ) {
   const r = resend();
@@ -139,6 +153,7 @@ export async function sendOrderConfirmation(
     .join("");
   const body = `<h1 style="margin:0 0 16px;font-size:24px;line-height:32px;">${c.orderTitle}</h1>
 ${textToHtml(c.orderBody)}
+${order.inseamCm ? textToHtml(c.hem(order.inseamCm)) : ""}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;line-height:20px;">${rows}
 ${
   order.delivery === undefined
@@ -156,13 +171,31 @@ ${
   });
 }
 
-export async function notifyAdminOfOrder(order: { reference: string; email: string; total: number; itemCount: number }) {
+export async function notifyAdminOfOrder(order: {
+  reference: string;
+  email: string;
+  total: number;
+  items: OrderEmailItem[];
+  inseamCm?: number | null;
+  phone?: string | null;
+}) {
   const r = resend();
   // ADMIN_NOTIFY_EMAIL may list several addresses separated by commas
   const recipients = env.adminNotifyEmail.split(",").map((e) => e.trim()).filter(Boolean);
   if (!r || !recipients.length) return { skipped: true as const };
+  const lines = order.items.map((i) => `${i.qty} × ${i.name}, size ${i.size}`).join("\n");
   const html = layout(
-    textToHtml(`${order.itemCount} piece(s), ${formatPrice(order.total)}.\n\nReference ${order.reference}.\n\nOpen the admin to pack it: ${env.siteUrl}/admin/orders`),
+    textToHtml(
+      [
+        `${formatPrice(order.total)}, reference ${order.reference}.`,
+        lines,
+        order.inseamCm ? `Hem to an inside leg of ${order.inseamCm} cm.` : "",
+        order.phone ? `Phone: ${order.phone}` : "",
+        `Open the admin to pack it: ${env.siteUrl}/admin/orders`,
+      ]
+        .filter(Boolean)
+        .join("\n\n"),
+    ),
     "Sent to the shop team only.",
   );
   // One send per person, so an address Resend refuses does not block the others
@@ -178,6 +211,38 @@ export async function notifyAdminOfOrder(order: { reference: string; email: stri
       }),
     ),
   );
+}
+
+/** Tells the customer their parcel has left, with the tracking number and link. */
+export async function sendShippedEmail(
+  to: string,
+  order: { reference: string; trackingNumber?: string | null; trackingUrl?: string | null },
+  locale?: unknown,
+) {
+  const r = resend();
+  if (!r) return { skipped: true as const };
+  const c = copyFor(locale);
+  const safeUrl = order.trackingUrl && /^https?:\/\//i.test(order.trackingUrl) ? order.trackingUrl : null;
+  const body = `<h1 style="margin:0 0 16px;font-size:24px;line-height:32px;">${c.shippedTitle}</h1>
+${textToHtml(c.shippedBody)}
+${
+  order.trackingNumber
+    ? `<p style="margin:0 0 16px;font-size:14px;">${c.tracking}<br/><span style="font-family:monospace;font-size:18px;letter-spacing:1px;">${esc(order.trackingNumber)}</span></p>`
+    : ""
+}
+${
+  safeUrl
+    ? `<a href="${esc(safeUrl)}" style="display:inline-block;background:#141414;color:#f3efe6;padding:8px 16px;text-decoration:none;font-weight:600;letter-spacing:1px;border:2px dashed #d68a2e;outline:3px solid #141414;">${c.trackCta}</a>`
+    : ""
+}
+<p style="margin:16px 0 0;font-size:12px;color:#5c6070;font-family:monospace;">${c.reference} ${esc(order.reference)}</p>`;
+  return r.emails.send({
+    from: env.emailFrom,
+    ...(site.contactEmail ? { replyTo: site.contactEmail } : {}),
+    to,
+    subject: c.shippedSubject,
+    html: layout(body, esc(c.shippedFooter)),
+  });
 }
 
 /**

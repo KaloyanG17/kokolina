@@ -4,7 +4,7 @@ import { site } from "@/data/site";
 import { getT } from "@/i18n/server";
 
 /** Turns the studio email inside a sentence into a link. */
-function withEmailLink(text: string) {
+export function withEmailLink(text: string) {
   const email = site.contactEmail;
   if (!email || !text.includes(email)) return text;
   return text.split(email).flatMap((part, i) =>

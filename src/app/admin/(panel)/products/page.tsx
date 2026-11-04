@@ -66,7 +66,18 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
                     </td>
                     <td className="body-6 p-4">{r.category}</td>
                     <td className="body-6 p-4 text-right font-mono tabular-nums">{formatPrice(r.price_cents / 100)}</td>
-                    <td className={`body-6 p-4 text-right font-mono tabular-nums ${r.stock === 0 ? "text-danger" : ""}`}>{r.stock}</td>
+                    <td className={`body-6 p-4 text-right font-mono tabular-nums ${r.stock === 0 ? "text-danger" : ""}`}>
+                      {r.stock}
+                      {r.size_stock && Object.keys(r.size_stock).length > 0 && (
+                        <span className="caption-5 block whitespace-nowrap text-muted">
+                          {r.sizes.map((s: string) => (
+                            <span key={s} className={((r.size_stock ?? {})[s] ?? 0) === 0 ? "text-danger" : ""}>
+                              {s}:{(r.size_stock ?? {})[s] ?? 0}{" "}
+                            </span>
+                          ))}
+                        </span>
+                      )}
+                    </td>
                     <td className="p-4">
                       <span className="caption-3 flex flex-wrap gap-1 font-mono uppercase">
                         <span className={`rounded-sm px-2 py-1 ${r.published ? "bg-ink-soft text-ink" : "bg-surface-3 text-muted"}`}>

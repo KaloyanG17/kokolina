@@ -7,7 +7,7 @@ import { z } from "zod";
 import { categories } from "@/data/products";
 import { requireAdmin, type ActionState } from "@/lib/admin";
 import { CATALOG_TAG } from "@/lib/catalog";
-import { sendNewsletter } from "@/lib/email";
+import { sendNewsletter, sendShippedEmail } from "@/lib/email";
 import { has } from "@/lib/env";
 import { userClient } from "@/lib/supabase/server";
 
@@ -89,13 +89,31 @@ export async function saveProduct(_: ActionState, form: FormData): Promise<Actio
   const slug = slugify(p.slug || p.name);
   if (!slug) return { errors: { slug: "Use letters or numbers in the web address." } };
 
+  const sizes = [...new Set(p.sizes.split(",").map((s) => s.trim()).filter(Boolean))];
+  if (sizes.some((s) => s.length > 10)) return { errors: { sizes: "Keep each size to 10 characters or fewer." } };
+
+  // Stock per size; every size left empty keeps the single total
+  const sizeStock: Record<string, number> = {};
+  for (const size of sizes) {
+    const raw = String(form.get(`stock_${size}`) ?? "").trim();
+    if (raw === "") continue;
+    const n = Number(raw);
+    if (!Number.isInteger(n) || n < 0 || n > 100000) {
+      return { errors: { size_stock: `Stock for size ${size} must be a whole number of 0 or more.` }, message: "Some fields need attention." };
+    }
+    sizeStock[size] = n;
+  }
+  const perSize = Object.keys(sizeStock).length > 0;
+  if (perSize) for (const size of sizes) sizeStock[size] ??= 0;
+
   const row = {
     slug,
     lot: p.lot,
     name: p.name,
     category: p.category,
     price_cents: Math.round(p.price * 100),
-    stock: p.stock,
+    stock: perSize ? Object.values(sizeStock).reduce((a, b) => a + b, 0) : p.stock,
+    size_stock: sizeStock,
     colour: p.colour,
     fabric: p.fabric,
     description: p.description,
@@ -107,10 +125,7 @@ export async function saveProduct(_: ActionState, form: FormData): Promise<Actio
     description_bg: p.description_bg,
     fit_bg: p.fit_bg,
     care_bg: p.care_bg,
-    sizes: p.sizes
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean),
+    sizes,
     art: p.art,
     wash: p.wash,
     sort: p.sort,
@@ -120,9 +135,18 @@ export async function saveProduct(_: ActionState, form: FormData): Promise<Actio
     exclusive: form.get("exclusive") === "on",
   };
 
-  const query = p.id ? db.from("products").update(row).eq("id", p.id) : db.from("products").insert(row);
-  const { data, error } = await query.select("id").single();
-  if (error) {
+  const write = (values: Partial<typeof row>) =>
+    (p.id ? db.from("products").update(values).eq("id", p.id) : db.from("products").insert(values)).select("id").single();
+  let { data, error } = await write(row);
+  // Database without migration 0003: save everything except the per size counts
+  if (error && /size_stock/.test(error.message)) {
+    if (perSize) return { message: "Stock per size needs migration 0003. Run supabase/migrations/0003_size_stock_refunds_tracking.sql in Supabase, or clear the size boxes." };
+    const legacy: Partial<typeof row> = { ...row };
+    delete legacy.size_stock;
+    ({ data, error } = await write(legacy));
+  }
+  if (error || !data) {
+    if (!error) return { message: "Could not save the product." };
     if (error.code === "23505") return { errors: { slug: "Another product already uses this web address." } };
     return { message: `Could not save: ${error.message}` };
   }
@@ -307,4 +331,49 @@ export async function setOrderStatus(form: FormData) {
   if (!["paid", "fulfilled", "refunded", "cancelled"].includes(status)) return;
   await db.from("orders").update({ status }).eq("id", String(form.get("id")));
   revalidatePath("/admin/orders");
+}
+
+/**
+ * Marks an order as posted, saves the tracking details and, when ticked,
+ * emails the customer in the language they ordered in.
+ */
+export async function shipOrder(_: ActionState, form: FormData): Promise<ActionState> {
+  const { db } = await requireAdmin();
+  const id = String(form.get("id"));
+  const trackingNumber = String(form.get("tracking_number") ?? "").trim().slice(0, 80);
+  const trackingUrl = String(form.get("tracking_url") ?? "").trim().slice(0, 500);
+  if (trackingUrl && !/^https?:\/\//i.test(trackingUrl)) {
+    return { errors: { tracking_url: "Paste the full link, starting with https://" } };
+  }
+
+  const { data: order, error } = await db.from("orders").select("*").eq("id", id).single();
+  if (error || !order) return { message: `Could not load the order: ${error?.message ?? "not found"}` };
+
+  const { error: saveError } = await db
+    .from("orders")
+    .update({
+      status: "fulfilled",
+      tracking_number: trackingNumber || null,
+      tracking_url: trackingUrl || null,
+      shipped_at: order.shipped_at ?? new Date().toISOString(),
+    })
+    .eq("id", id);
+  if (saveError) {
+    return {
+      message: /column/i.test(saveError.message)
+        ? "Tracking needs migration 0003. Run supabase/migrations/0003_size_stock_refunds_tracking.sql in Supabase."
+        : `Could not save: ${saveError.message}`,
+    };
+  }
+
+  let note = "";
+  if (form.get("notify") === "on" && order.email) {
+    const reference = String(order.stripe_session_id).slice(-10).toUpperCase();
+    const sent = await sendShippedEmail(order.email, { reference, trackingNumber, trackingUrl }, order.lang);
+    if ("skipped" in sent) note = " No email sent: Resend is not configured.";
+    else if (sent.error) note = ` The email failed: ${sent.error.message}`;
+    else note = ` Emailed ${order.email}.`;
+  }
+  revalidatePath("/admin/orders");
+  return { ok: !note.includes("failed"), message: `Marked as shipped.${note}` };
 }

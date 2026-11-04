@@ -39,6 +39,8 @@ export type Product = {
   /** Uploaded photos (public URLs). The engraved drawing is shown until one is added. */
   images?: { url: string; alt: string }[];
   stock?: number;
+  /** Stock per size. Empty or absent: only the product total is tracked. */
+  sizeStock?: Record<string, number>;
   isNew?: boolean;
   soldOut?: boolean;
   /** Part of the red dot exclusive run. */
@@ -48,6 +50,17 @@ export type Product = {
 /** Colour and fabric joined, skipping whichever is empty. */
 export function productDetails(product: Pick<Product, "colour" | "fabric">) {
   return [product.colour, product.fabric].filter(Boolean).join(" · ");
+}
+
+/** Pieces left in one size, or undefined when stock is not tracked for this product. */
+export function stockFor(product: Pick<Product, "stock" | "sizeStock">, size: string): number | undefined {
+  if (product.sizeStock && Object.keys(product.sizeStock).length) return product.sizeStock[size] ?? 0;
+  return product.stock;
+}
+
+/** Sizes measured as a waist in inches (26, 28...) rather than letters. */
+export function usesWaistSizes(sizes: string[]) {
+  return sizes.length > 0 && sizes.every((s) => /^\d{2}$/.test(s));
 }
 
 const WAIST = ["26", "28", "30", "32", "34", "36"];

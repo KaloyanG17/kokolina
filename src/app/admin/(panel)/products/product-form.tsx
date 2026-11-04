@@ -5,6 +5,7 @@ import { categories } from "@/data/products";
 import type { ProductRow } from "@/lib/catalog";
 import { Field, Notice, SubmitButton } from "@/components/admin/ui";
 import { saveProduct } from "../../actions";
+import { SizeStock } from "./size-stock";
 
 const ARTS = ["jeans", "trucker", "chore", "western", "dress", "skirt", "overalls", "sweat"];
 const WASHES = ["raw", "rinse", "light", "ecru"];
@@ -45,8 +46,12 @@ export function ProductForm({ product }: { product?: ProductRow }) {
       <fieldset className="grid grid-cols-1 gap-4 rounded-md border border-line bg-surface p-6 sm:grid-cols-3">
         <legend className="title-3 px-2">Price and stock</legend>
         <Field label="Price (EUR)" name="price" type="number" step="0.01" min="0" inputMode="decimal" defaultValue={p ? p.price_cents / 100 : ""} error={e.price} required />
-        <Field label="Stock" name="stock" type="number" min="0" step="1" defaultValue={p?.stock ?? 0} error={e.stock} hint="Lowered automatically by paid orders." />
-        <Field label="Sizes" name="sizes" defaultValue={p?.sizes.join(", ") ?? "XS, S, M, L, XL"} hint="Comma separated." error={e.sizes} />
+        <SizeStock
+          sizes={p?.sizes.join(", ") ?? "XS, S, M, L, XL"}
+          sizeStock={p?.size_stock ?? {}}
+          stock={p?.stock ?? 0}
+          errors={e}
+        />
         <div className="flex flex-wrap gap-6 sm:col-span-3">
           {[
             ["published", "Published in the shop", p?.published ?? true],

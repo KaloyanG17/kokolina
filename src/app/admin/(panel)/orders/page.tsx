@@ -8,6 +8,7 @@ import { ProductPicture } from "@/components/product-picture";
 import { Notice, PageHeader } from "@/components/admin/ui";
 import { LiveRefresh } from "@/components/admin/live-refresh";
 import { setOrderStatus } from "../../actions";
+import { ShipForm } from "./ship-form";
 
 export const metadata: Metadata = { title: "Orders" };
 
@@ -15,7 +16,7 @@ const dateFmt = new Intl.DateTimeFormat("en-IE", { dateStyle: "medium", timeStyl
 const STATUSES = ["paid", "fulfilled", "refunded", "cancelled"] as const;
 
 type OrderItem = { slug?: string; name: string; size: string; qty: number; unitAmount: number };
-type Address = { name?: string; address?: { line1?: string; line2?: string; city?: string; postal_code?: string; country?: string } } & {
+type Address = { name?: string; phone?: string | null; address?: { line1?: string; line2?: string; city?: string; postal_code?: string; country?: string } } & {
   line1?: string;
   city?: string;
   postal_code?: string;
@@ -32,7 +33,10 @@ export default async function Orders() {
 
   return (
     <>
-      <PageHeader title="Orders" intro="Paid orders arrive here from Stripe. Mark them fulfilled once they are posted." />
+      <PageHeader
+        title="Orders"
+        intro="Paid orders arrive here from Stripe. Add the tracking number when you post one and the customer gets an email. Refund in the Stripe dashboard and the order and stock update themselves."
+      />
       <LiveRefresh />
       {!has.stripe && <Notice>Stripe is not connected yet. Orders appear once checkout and the webhook are set up.</Notice>}
       {error && <Notice tone="error">Could not load orders: {error.message}</Notice>}
@@ -78,6 +82,50 @@ export default async function Orders() {
                     <p className="caption-2 text-muted">
                       {[addr.line1, addr.city, addr.postal_code, addr.country].filter(Boolean).join(", ")}
                     </p>
+                  )}
+                  {ship.phone && (
+                    <p className="caption-2 font-mono text-muted">
+                      <a href={`tel:${ship.phone}`} className="focus-ring rounded underline-offset-4 hover:underline">
+                        {ship.phone}
+                      </a>
+                    </p>
+                  )}
+                  {o.inseam_cm && (
+                    <p className="caption-1 w-fit rounded-sm border border-dashed border-thread px-2 py-1 text-fg">
+                      Hem to an inside leg of {o.inseam_cm} cm
+                    </p>
+                  )}
+                  {o.refunded_cents > 0 && (
+                    <p className="caption-1 text-danger">
+                      Refunded {formatPrice(o.refunded_cents / 100)}
+                      {o.refunded_cents < o.amount_total_cents ? " (partial)" : ""}
+                    </p>
+                  )}
+                  {o.shipped_at && (
+                    <p className="caption-2 text-muted">
+                      Shipped {dateFmt.format(new Date(o.shipped_at))}
+                      {o.tracking_number && (
+                        <>
+                          {" · "}
+                          {o.tracking_url ? (
+                            <a href={o.tracking_url} target="_blank" rel="noreferrer" className="font-mono underline underline-offset-4">
+                              {o.tracking_number}
+                            </a>
+                          ) : (
+                            <span className="font-mono">{o.tracking_number}</span>
+                          )}
+                        </>
+                      )}
+                    </p>
+                  )}
+                  {(o.status === "paid" || o.status === "fulfilled") && (
+                    <ShipForm
+                      id={o.id}
+                      trackingNumber={o.tracking_number}
+                      trackingUrl={o.tracking_url}
+                      shipped={Boolean(o.shipped_at)}
+                      hasEmail={Boolean(o.email)}
+                    />
                   )}
                 </div>
                 <div className="flex items-center gap-4 md:flex-col md:items-end">

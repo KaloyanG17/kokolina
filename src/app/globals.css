@@ -448,3 +448,46 @@ body {
     --hero-to: #9b9b9b;
   }
 }
+
+/* Printing a page with a [data-print-only] block (the withdrawal form) prints only that block */
+@media print {
+  body:has([data-print-only]) {
+    visibility: hidden;
+    background: #fff;
+  }
+  [data-print-only] {
+    visibility: visible;
+    position: absolute;
+    inset: 0 0 auto 0;
+  }
+}
+
+/* Size guide dialog: fades and rises in, backdrop dims; reduced motion keeps only the fade */
+.size-guide {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 200ms var(--ease-brand),
+    translate 200ms var(--ease-brand),
+    overlay 200ms allow-discrete,
+    display 200ms allow-discrete;
+}
+.size-guide:not([open]) {
+  opacity: 0;
+  translate: 0 12px;
+}
+@starting-style {
+  .size-guide[open] {
+    opacity: 0;
+    translate: 0 12px;
+  }
+}
+.size-guide::backdrop {
+  background: rgb(10 14 26 / 0.5);
+}
+@media (prefers-reduced-motion: reduce) {
+  .size-guide,
+  .size-guide:not([open]) {
+    translate: 0 0;
+  }
+}
