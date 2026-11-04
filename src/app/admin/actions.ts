@@ -192,14 +192,17 @@ export async function updateProductImage(form: FormData) {
 
   if (intent === "delete") {
     const { data } = await db.from("product_images").select("path").eq("id", id).single();
+    const { error } = await db.from("product_images").delete().eq("id", id);
+    if (error) throw new Error(`Could not delete the photo: ${error.message}`);
     if (data) await db.storage.from("media").remove([data.path]);
-    await db.from("product_images").delete().eq("id", id);
   } else if (intent === "first") {
     const { data: imgs } = await db.from("product_images").select("id").eq("product_id", productId).order("sort");
     const ordered = [id, ...(imgs ?? []).map((i) => i.id).filter((x) => x !== id)];
     await Promise.all(ordered.map((imgId, i) => db.from("product_images").update({ sort: i }).eq("id", imgId)));
   } else if (intent === "alt") {
     await db.from("product_images").update({ alt: String(form.get("alt") ?? "").slice(0, 200) }).eq("id", id);
+  } else {
+    throw new Error(`Unknown photo action: ${intent}`);
   }
   refreshStore();
   revalidatePath(`/admin/products/${productId}`);

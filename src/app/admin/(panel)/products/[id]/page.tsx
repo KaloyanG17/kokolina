@@ -99,7 +99,8 @@ export default async function EditProduct({
                     <form action={updateProductImage} className="flex-1">
                       <input type="hidden" name="id" value={img.id} />
                       <input type="hidden" name="product_id" value={id} />
-                      <button type="submit" name="intent" value="first" className="btn-secondary button-sm w-full px-2 py-1">
+                      <input type="hidden" name="intent" value="first" />
+                      <button type="submit" className="btn-secondary button-sm w-full px-2 py-1">
                         Make main
                       </button>
                     </form>
@@ -107,7 +108,8 @@ export default async function EditProduct({
                   <form action={updateProductImage} className="flex-1">
                     <input type="hidden" name="id" value={img.id} />
                     <input type="hidden" name="product_id" value={id} />
-                    <button type="submit" name="intent" value="delete" className="btn-secondary button-sm w-full px-2 py-1 text-danger">
+                    <input type="hidden" name="intent" value="delete" />
+                    <button type="submit" className="btn-secondary button-sm w-full px-2 py-1 text-danger">
                       Delete
                     </button>
                   </form>
