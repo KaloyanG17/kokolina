@@ -63,12 +63,14 @@ const copy = {
     shopCta: "SHOP THE DENIM",
     orderSubject: `Your ${site.brand} order is confirmed`,
     orderTitle: "Thank you, your order is in",
-    orderBody: `We have your order and will pack it in the studio. You will get another email with tracking when it leaves, within ${site.shippingDays}.`,
+    orderBody: `We have your order and will pack it in the studio. You will get another email with tracking when it leaves, within ${site.dispatchDays.min}–${site.dispatchDays.max} working days.`,
     size: "Size",
     qty: "Qty",
     total: "Total",
+    delivery: "Delivery",
+    free: "Free",
     reference: "Reference",
-    orderFooter: `Questions about your order? Reply to this email. Free returns within ${esc(site.returnWindow)}.`,
+    orderFooter: `Questions about your order? Reply to this email. Unworn pieces can be returned within ${site.returnDays} days.`,
   },
   bg: {
     listFooter: (url: string) =>
@@ -80,12 +82,14 @@ const copy = {
     shopCta: "РАЗГЛЕДАЙ ДЕНИМА",
     orderSubject: `Поръчката ти от ${site.brand} е потвърдена`,
     orderTitle: "Благодарим, поръчката ти е приета",
-    orderBody: `Получихме поръчката ти и ще я опаковаме в ателието. Ще получиш още един имейл с номер за проследяване, когато тръгне, до ${site.shippingDays}.`,
+    orderBody: `Получихме поръчката ти и ще я опаковаме в ателието. Ще получиш още един имейл с номер за проследяване, когато тръгне, в рамките на ${site.dispatchDays.min}–${site.dispatchDays.max} работни дни.`,
     size: "Размер",
     qty: "Брой",
     total: "Общо",
+    delivery: "Доставка",
+    free: "Безплатна",
     reference: "Номер",
-    orderFooter: `Въпроси за поръчката? Отговори на този имейл. Безплатно връщане до ${esc(site.returnWindow)}.`,
+    orderFooter: `Въпроси за поръчката? Отговори на този имейл. Неносени дрехи могат да бъдат върнати до ${site.returnDays} дни.`,
   },
 };
 
@@ -104,6 +108,7 @@ ${textToHtml(c.welcomeBody)}
 <a href="${env.siteUrl}/shop" style="display:inline-block;background:#141414;color:#f3efe6;padding:8px 16px;text-decoration:none;font-weight:600;letter-spacing:1px;border:2px dashed #d68a2e;outline:3px solid #141414;">${c.shopCta}</a>`;
   return r.emails.send({
     from: env.emailFrom,
+    ...(site.contactEmail ? { replyTo: site.contactEmail } : {}),
     to,
     subject: c.welcomeSubject,
     html: layout(body, newsletterFooter(token, locale)),
@@ -115,7 +120,7 @@ export type OrderEmailItem = { name: string; size: string; qty: number; unitAmou
 
 export async function sendOrderConfirmation(
   to: string,
-  order: { reference: string; items: OrderEmailItem[]; total: number },
+  order: { reference: string; items: OrderEmailItem[]; total: number; delivery?: number },
   locale?: unknown,
 ) {
   const r = resend();
@@ -135,10 +140,16 @@ export async function sendOrderConfirmation(
   const body = `<h1 style="margin:0 0 16px;font-size:24px;line-height:32px;">${c.orderTitle}</h1>
 ${textToHtml(c.orderBody)}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;line-height:20px;">${rows}
+${
+  order.delivery === undefined
+    ? ""
+    : `<tr><td colspan="2" style="padding:8px 0;border-bottom:1px dashed #d6cdb9;">${c.delivery}</td><td align="right" style="padding:8px 0;border-bottom:1px dashed #d6cdb9;font-family:monospace;">${order.delivery ? formatPrice(order.delivery) : c.free}</td></tr>`
+}
 <tr><td colspan="2" style="padding:12px 0;font-weight:600;">${c.total}</td><td align="right" style="padding:12px 0;font-weight:600;font-family:monospace;">${formatPrice(order.total)}</td></tr></table>
 <p style="margin:16px 0 0;font-size:12px;color:#5c6070;font-family:monospace;">${c.reference} ${esc(order.reference)}</p>`;
   return r.emails.send({
     from: env.emailFrom,
+    ...(site.contactEmail ? { replyTo: site.contactEmail } : {}),
     to,
     subject: c.orderSubject,
     html: layout(body, c.orderFooter),
@@ -157,7 +168,14 @@ export async function notifyAdminOfOrder(order: { reference: string; email: stri
   // One send per person, so an address Resend refuses does not block the others
   return Promise.all(
     recipients.map((to) =>
-      r.emails.send({ from: env.emailFrom, to, subject: `New order: ${formatPrice(order.total)} from ${order.email}`, html }),
+      r.emails.send({
+        from: env.emailFrom,
+        // Replying goes straight to the customer
+        ...(order.email.includes("@") ? { replyTo: order.email } : {}),
+        to,
+        subject: `New order: ${formatPrice(order.total)} from ${order.email}`,
+        html,
+      }),
     ),
   );
 }

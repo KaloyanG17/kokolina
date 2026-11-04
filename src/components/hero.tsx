@@ -33,7 +33,7 @@ export async function Hero({ photo }: { photo?: { url?: string; alt: string } })
                 {hero.cta}
                 <ArrowRight size={18} weight="bold" aria-hidden />
               </Link>
-              <p className="caption-2 text-muted">{hero.seenIn}</p>
+              <p className="caption-2 text-muted">{hero.delivery}</p>
             </div>
             <ul className="flex flex-wrap gap-2 pt-2" aria-label={hero.specsLabel}>
               {hero.specs.map((s) => (

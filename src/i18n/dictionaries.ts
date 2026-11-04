@@ -3,17 +3,23 @@ import type { Category } from "@/data/products";
 import type { Locale } from "./config";
 
 /**
- * Every storefront string in Bulgarian and English. Placeholders written as
- * {{like this}} still come from src/data/site.ts and must be filled before launch.
+ * Every storefront string in Bulgarian and English. Facts such as delivery
+ * times, prices and the contact email come from src/data/site.ts.
  */
 
 type Section = { heading: string; body: string };
+
+const { dispatchDays, returnDays, vatRate, shipping, contactEmail } = site;
+const eur = (n: number) => `€${n}`;
+const dispatchEn = `${dispatchDays.min}–${dispatchDays.max} working days`;
+const dispatchBg = `${dispatchDays.min}–${dispatchDays.max} работни дни`;
+const email = contactEmail ?? "";
 type Faq = { q: string; a: string };
 
 const en = {
   meta: {
     title: `${site.brand}, selvedge denim cut and stitched in small runs`,
-    description: `${site.brand} cuts selvedge denim and workwear in small numbered runs in ${site.city}. Every seam is finished by hand.`,
+    description: `${site.brand} cuts selvedge denim and workwear in small numbered runs in ${site.city.en}, Bulgaria. Every seam is finished by hand.`,
     skip: "Skip to content",
   },
   categories: {
@@ -43,9 +49,9 @@ const en = {
   hero: {
     eyebrow: "Lot 2026 · The selvedge collection",
     title: ["Raw denim, cut", "and stitched by hand"],
-    intro: `${site.brand} cuts selvedge denim and workwear in small numbered runs in ${site.city}. Every seam is finished by hand, so each piece wears in to fit you.`,
+    intro: `${site.brand} cuts selvedge denim and workwear in small numbered runs in ${site.city.en}. Every seam is finished by hand, so each piece wears in to fit you.`,
     cta: "Shop the denim",
-    seenIn: `As seen in ${site.pressMention}`,
+    delivery: `Free delivery in Bulgaria on orders over ${eur(shipping.freeFrom)}`,
     specsLabel: "How it is made",
     specs: ["14 oz selvedge", "Chain stitched hems", "Copper rivets"],
     figure: "Fig. 01 · Back pocket, Lot 001",
@@ -60,11 +66,11 @@ const en = {
   section: { number: "No." },
   craft: {
     title: "Made slowly, seam by seam",
-    intro: `Each style is cut in runs of ${site.runSize} pieces. When a lot is gone, it is gone.`,
+    intro: "Each style is cut in a small numbered run. When a lot is gone, it is gone.",
     benefits: [
       {
         title: "Selvedge cloth",
-        text: `Woven on narrow shuttle looms at ${site.mill}, with the clean edge you see when you turn up a cuff.`,
+        text: "Woven on narrow shuttle looms at selected selvedge mills, with the clean edge you see when you turn up a cuff.",
       },
       {
         title: "Stitched by hand",
@@ -89,15 +95,14 @@ const en = {
       },
       {
         title: "We pack it in the studio",
-        text: `Your order is checked, folded and wrapped, then leaves within ${site.shippingDays}.`,
+        text: `Your order is checked, folded and wrapped, then leaves within ${dispatchEn}.`,
       },
       {
         title: "Wear it in, or send it back",
-        text: `If it is not right, return it unworn within ${site.returnWindow} for a full refund.`,
+        text: `If it is not right, return it unworn within ${returnDays} days of delivery for a refund.`,
       },
     ],
   },
-  proof: { title: "Worn in and written about", press: "Press" },
   faq: {
     title: "Questions, answered",
     intro: "Anything else? Write to the studio and a person will answer.",
@@ -108,40 +113,46 @@ const en = {
       },
       {
         q: "How long does shipping take?",
-        a: `Orders leave the studio within ${site.shippingDays}. You get a tracking link by email as soon as the parcel is collected.`,
+        a: `Orders leave the studio within ${dispatchEn} and go by courier anywhere in Bulgaria. Delivery is ${eur(shipping.fee)}, or free on orders over ${eur(shipping.freeFrom)}. You get a tracking link by email as soon as the parcel is collected.`,
       },
       {
         q: "Can I return a piece?",
-        a: `Yes. Unworn pieces with their tags can be returned within ${site.returnWindow} of delivery for a full refund.`,
+        a: `Yes. Unworn pieces with their tags can be returned within ${returnDays} days of delivery. Email us to start a return. You pay the return postage, and we refund the piece and the original delivery within 14 days of receiving it.`,
       },
       {
         q: "Where are the fabrics from?",
-        a: `Our main cloths come from ${site.mill}. Each product page names the fabric and its fibre content.`,
+        a: "Our denim comes from selected selvedge mills. Each product page names the fabric and its weight.",
       },
       {
         q: "Why are some pieces made in limited numbers?",
-        a: `Each style is cut in runs of ${site.runSize} pieces. When a run sells out, it may come back in a later collection, but we do not promise it.`,
+        a: "Each style is cut in a small numbered run. When a run sells out, it may come back in a later collection, but we do not promise it.",
       },
       {
         q: "How should I care for my piece?",
         a: "Care instructions are sewn into every garment. Most tailoring should be dry cleaned and steamed rather than pressed with a hot iron.",
       },
-      { q: "Do you offer alterations?", a: "{{alterations policy}}" },
-      { q: "Which payment methods do you accept?", a: "{{payment methods}}" },
+      {
+        q: "Do you offer alterations?",
+        a: "Yes. We hem jeans to your length for free. Email us your inside leg measurement with your order number and we finish the hem before the parcel leaves.",
+      },
+      {
+        q: "Which payment methods do you accept?",
+        a: `Visa, Mastercard and American Express cards, Apple Pay and Google Pay, all through Stripe's secure checkout. Prices include ${vatRate}% VAT.`,
+      },
     ] as Faq[],
   },
   finalCta: {
-    eyebrow: "No. 06 · Final fitting",
+    eyebrow: "No. 05 · Final fitting",
     title: ["Find the pair", "you will wear in"],
-    text: `Every lot is cut in small numbers. Free returns within ${site.returnWindow} if the fit is not right.`,
+    text: `Every lot is cut in small numbers. Returns within ${returnDays} days if the fit is not right.`,
   },
   tagline: {
     label: "What we stand for",
     lines: ["Fewer pairs,", "worn for longer.", "Denim that fades", "to fit only you."],
   },
   footer: {
-    blurb: `Selvedge denim and workwear, cut in numbered lots in ${site.city}.`,
-    copyright: (year: number) => `© ${year} ${site.brand}. Made in ${site.city}.`,
+    blurb: `Selvedge denim and workwear, cut in numbered lots in ${site.city.en}.`,
+    copyright: (year: number) => `© ${year} ${site.brand}. Made in ${site.city.en}, Bulgaria.`,
     shop: "Shop",
     help: "Help",
     studio: "Studio",
@@ -190,8 +201,9 @@ const en = {
     fabricCare: "Fabric and care",
     fit: "Fit",
     shipping: "Shipping and returns",
-    shippingBody: `Leaves the studio within ${site.shippingDays}. Free returns on unworn pieces within ${site.returnWindow}.`,
+    shippingBody: `Leaves the studio within ${dispatchEn}. Courier delivery in Bulgaria ${eur(shipping.fee)}, free over ${eur(shipping.freeFrom)}. Unworn pieces can be returned within ${returnDays} days.`,
     related: "You may also like",
+    priceNote: `Incl. ${vatRate}% VAT. Delivery ${eur(shipping.fee)}, free over ${eur(shipping.freeFrom)}.`,
     size: "Size",
     chooseSize: "Choose a size first.",
     addToBag: "Add to bag",
@@ -212,12 +224,16 @@ const en = {
     goToCheckout: "Go to checkout",
     opening: "Opening checkout",
     checkoutError: "Checkout could not start. Try again in a moment.",
-    secure: `Secure payment by Stripe. Free returns within ${site.returnWindow}.`,
+    secure: `Secure payment by Stripe. Prices include ${vatRate}% VAT. Returns within ${returnDays} days.`,
     notConnected: "Checkout opens once payments are connected.",
     summary: "Order summary",
     subtotalCount: (n: number) => `Subtotal (${n} ${n === 1 ? "piece" : "pieces"})`,
     shipping: "Shipping",
     shippingCalc: "Calculated at checkout",
+    shippingFree: "Free",
+    freeShippingLeft: (amount: string) => `Add ${amount} more for free delivery`,
+    freeShippingDone: "Free delivery in Bulgaria",
+    vat: `Incl. ${vatRate}% VAT`,
     total: "Total",
     continue: "Continue shopping",
     size: "Size",
@@ -236,6 +252,8 @@ const en = {
     lowStock: (n: number, name: string) => `Only ${n} of ${name} left. Lower the quantity to continue.`,
     noPage: "Stripe did not return a checkout page. Try again.",
     size: (size: string) => `Size ${size}`,
+    courier: "Courier delivery in Bulgaria",
+    courierFree: "Free courier delivery in Bulgaria",
   },
   consent: {
     label: "Analytics consent",
@@ -260,6 +278,8 @@ const en = {
     size: "Size",
     qty: "Qty",
     total: "Total",
+    delivery: "Delivery",
+    free: "Free",
   },
   unsubscribe: {
     eyebrow: "Newsletter",
@@ -287,34 +307,67 @@ const en = {
   },
   legal: {
     back: "Back to the shop",
-    draft: "Draft outline. Replace every section with text reviewed for your business and jurisdiction before launch.",
+    seller: "Seller",
+    sellerPending: `${site.brand}, ${site.city.en}, Bulgaria. Contact: ${email}. The company name, registration number (EIK) and registered address will be added here once the business is registered.`,
+    sellerDetails: (s: { name: string; eik: string; vatNumber?: string; address: string }) =>
+      `${s.name}, EIK ${s.eik}${s.vatNumber ? `, VAT ${s.vatNumber}` : ""}, ${s.address}. Contact: ${email}.`,
+    updated: "Last updated November 2026.",
     privacy: {
       title: "Privacy policy",
       sections: [
-        { heading: "Who we are", body: "{{legal business name, address and contact email}}" },
         {
           heading: "What we collect",
-          body: "Your email address if you sign up for collection news, and the details you enter at checkout to fulfil your order.",
+          body: "When you order: your name, email, phone number, delivery address and what you buy. Card details go straight to Stripe and never reach us. If you join the newsletter: your email address.",
+        },
+        {
+          heading: "Why we use it",
+          body: "To deliver your order and help with it, to keep the accounting and tax records the law requires, and, only if you subscribe, to send news about new collections. Every newsletter has a one click unsubscribe link.",
+        },
+        {
+          heading: "Who we share it with",
+          body: "Stripe (payments), Supabase (our order and newsletter database), Resend (email), Vercel (hosting) and Sentry (error reports). The courier receives your name, phone and address to deliver your parcel. If you accept analytics, PostHog (EU) records anonymised visits and session replays with every form field hidden.",
         },
         {
           heading: "Storage on your device",
-          body: "Your bag and your language are saved in your browser so they are still there when you return. Analytics only run if you accept them.",
+          body: "Your bag, language and theme are saved in your browser so they are still there when you return. Analytics only run if you accept them.",
         },
-        { heading: "Who we share it with", body: "{{payment, shipping and email providers}}" },
-        { heading: "Your rights", body: "{{how to access, correct or delete your data}}" },
+        {
+          heading: "How long we keep it",
+          body: "Order records for as long as Bulgarian tax law requires. Newsletter addresses until you unsubscribe.",
+        },
+        {
+          heading: "Your rights",
+          body: `You can ask to see, correct, delete or take a copy of your data, or object to how we use it, by emailing ${email}. You can also complain to the Commission for Personal Data Protection (cpdp.bg).`,
+        },
       ] as Section[],
     },
     terms: {
       title: "Terms of sale",
       sections: [
-        { heading: "Orders", body: "{{when a contract is formed and how orders are confirmed}}" },
-        { heading: "Prices and payment", body: "{{currency, taxes and accepted payment methods}}" },
-        { heading: "Shipping", body: `Orders leave the studio within ${site.shippingDays}. {{regions and costs}}` },
         {
-          heading: "Returns and refunds",
-          body: `Unworn pieces with their tags can be returned within ${site.returnWindow} of delivery. {{how to start a return and who pays return shipping}}`,
+          heading: "Orders",
+          body: "Your order is accepted once payment succeeds and we email a confirmation with your order reference. If a piece turns out to be unavailable, we tell you and refund it in full.",
         },
-        { heading: "Contact", body: "{{studio contact details}}" },
+        {
+          heading: "Prices and payment",
+          body: `Prices are in euros and include ${vatRate}% VAT. We accept Visa, Mastercard, American Express, Apple Pay and Google Pay through Stripe.`,
+        },
+        {
+          heading: "Delivery",
+          body: `We deliver by courier within Bulgaria. Orders leave the studio within ${dispatchEn}. Delivery costs ${eur(shipping.fee)} and is free on orders of ${eur(shipping.freeFrom)} or more.`,
+        },
+        {
+          heading: "Returns and your right to withdraw",
+          body: `You can withdraw from your purchase within ${returnDays} days of receiving it, without giving a reason. Email ${email} to start a return, then send the piece back unworn with its tags. You pay the return postage. We refund the price and the original delivery cost to your card within 14 days of receiving the piece.`,
+        },
+        {
+          heading: "Faulty pieces",
+          body: "If something arrives damaged or faulty, email us a photo and we will repair, replace or refund it, postage included. This does not affect your legal guarantee under Bulgarian consumer law.",
+        },
+        {
+          heading: "Questions and complaints",
+          body: `Email ${email} and a person will answer. You can also contact the Commission for Consumer Protection (kzp.bg).`,
+        },
       ] as Section[],
     },
   },
@@ -338,7 +391,7 @@ export type Dict = typeof en;
 const bg: Dict = {
   meta: {
     title: `${site.brand}, селвидж деним, скроен и ушит в малки серии`,
-    description: `${site.brand} шие селвидж деним и работно облекло в малки номерирани серии в ${site.city}. Всеки шев е завършен на ръка.`,
+    description: `${site.brand} шие селвидж деним и работно облекло в малки номерирани серии във ${site.city.bg}. Всеки шев е завършен на ръка.`,
     skip: "Към съдържанието",
   },
   categories: {
@@ -368,9 +421,9 @@ const bg: Dict = {
   hero: {
     eyebrow: "Лот 2026 · Селвидж колекцията",
     title: ["Суров деним, скроен", "и ушит на ръка"],
-    intro: `${site.brand} шие селвидж деним и работно облекло в малки номерирани серии в ${site.city}. Всеки шев е завършен на ръка, за да може всяка дреха да се износи точно по теб.`,
+    intro: `${site.brand} шие селвидж деним и работно облекло в малки номерирани серии във ${site.city.bg}. Всеки шев е завършен на ръка, за да може всяка дреха да се износи точно по теб.`,
     cta: "Разгледай денима",
-    seenIn: `Споменати в ${site.pressMention}`,
+    delivery: `Безплатна доставка в България за поръчки над ${eur(shipping.freeFrom)}`,
     specsLabel: "Как е направено",
     specs: ["14 oz селвидж", "Подгъви с верижен бод", "Медни нитове"],
     figure: "Фиг. 01 · Заден джоб, Лот 001",
@@ -385,11 +438,11 @@ const bg: Dict = {
   section: { number: "№" },
   craft: {
     title: "Направено бавно, шев по шев",
-    intro: `Всеки модел се крои в серии от ${site.runSize} броя. Когато един лот свърши, той не се връща.`,
+    intro: "Всеки модел се крои в малка номерирана серия. Когато един лот свърши, той не се връща.",
     benefits: [
       {
         title: "Селвидж плат",
-        text: `Изтъкан на тесни совалкови станове в ${site.mill}, с чистия кант, който се вижда, когато подгънеш крачола.`,
+        text: "Изтъкан на тесни совалкови станове в подбрани селвидж тъкачници, с чистия кант, който се вижда, когато подгънеш крачола.",
       },
       {
         title: "Ушито на ръка",
@@ -414,15 +467,14 @@ const bg: Dict = {
       },
       {
         title: "Опаковаме го в ателието",
-        text: `Поръчката се проверява, сгъва и опакова и тръгва до ${site.shippingDays}.`,
+        text: `Поръчката се проверява, сгъва и опакова и тръгва в рамките на ${dispatchBg}.`,
       },
       {
         title: "Износи го или го върни",
-        text: `Ако не ти стои добре, върни го неносен до ${site.returnWindow} и ще получиш цялата сума обратно.`,
+        text: `Ако не ти стои добре, върни го неносен до ${returnDays} дни след доставката и ще ти възстановим сумата.`,
       },
     ],
   },
-  proof: { title: "Носени и описани", press: "Преса" },
   faq: {
     title: "Въпроси и отговори",
     intro: "Нещо друго? Пиши на ателието и ще ти отговори човек.",
@@ -433,40 +485,46 @@ const bg: Dict = {
       },
       {
         q: "Колко време отнема доставката?",
-        a: `Поръчките тръгват от ателието до ${site.shippingDays}. Получаваш линк за проследяване по имейл веднага щом пратката бъде взета.`,
+        a: `Поръчките тръгват от ателието в рамките на ${dispatchBg} и се доставят с куриер навсякъде в България. Доставката е ${eur(shipping.fee)} или безплатна за поръчки над ${eur(shipping.freeFrom)}. Получаваш линк за проследяване по имейл веднага щом пратката бъде взета.`,
       },
       {
         q: "Мога ли да върна продукт?",
-        a: `Да. Неносени дрехи с етикетите си могат да бъдат върнати до ${site.returnWindow} от доставката срещу пълно възстановяване на сумата.`,
+        a: `Да. Неносени дрехи с етикетите си могат да бъдат върнати до ${returnDays} дни след доставката. Пиши ни, за да започнеш връщане. Обратната доставка е за твоя сметка, а ние възстановяваме цената на дрехата и първоначалната доставка до 14 дни след като я получим.`,
       },
       {
         q: "Откъде са платовете?",
-        a: `Основните ни платове идват от ${site.mill}. На всяка продуктова страница са посочени платът и съставът му.`,
+        a: "Денимът ни идва от подбрани селвидж тъкачници. На всяка продуктова страница са посочени платът и теглото му.",
       },
       {
         q: "Защо някои модели са в ограничен брой?",
-        a: `Всеки модел се крои в серии от ${site.runSize} броя. Когато серията се изчерпи, може да се върне в следваща колекция, но не го обещаваме.`,
+        a: "Всеки модел се крои в малка номерирана серия. Когато серията се изчерпи, може да се върне в следваща колекция, но не го обещаваме.",
       },
       {
         q: "Как да се грижа за дрехата?",
         a: "Инструкциите за поддръжка са пришити във всяка дреха. Повечето шити дрехи е най-добре да се чистят химически и да се освежават с пара вместо с гореща ютия.",
       },
-      { q: "Предлагате ли поправки?", a: "{{политика за поправки}}" },
-      { q: "Какви начини на плащане приемате?", a: "{{начини на плащане}}" },
+      {
+        q: "Предлагате ли поправки?",
+        a: "Да. Подгъваме дънките по твоята дължина безплатно. Пиши ни дължината на вътрешния шев и номера на поръчката и ще оформим подгъва, преди пратката да тръгне.",
+      },
+      {
+        q: "Какви начини на плащане приемате?",
+        a: `Карти Visa, Mastercard и American Express, Apple Pay и Google Pay, през сигурното плащане на Stripe. Цените са с включен ${vatRate}% ДДС.`,
+      },
     ],
   },
   finalCta: {
-    eyebrow: "№ 06 · Последна проба",
+    eyebrow: "№ 05 · Последна проба",
     title: ["Намери чифта,", "който ще износиш"],
-    text: `Всеки лот се крои в малък брой. Безплатно връщане до ${site.returnWindow}, ако кройката не ти стои.`,
+    text: `Всеки лот се крои в малък брой. Връщане до ${returnDays} дни, ако кройката не ти стои.`,
   },
   tagline: {
     label: "В какво вярваме",
     lines: ["По-малко чифтове,", "носени по-дълго.", "Деним, който избелява", "само по теб."],
   },
   footer: {
-    blurb: `Селвидж деним и работно облекло, скроени в номерирани лотове в ${site.city}.`,
-    copyright: (year) => `© ${year} ${site.brand}. Изработено в ${site.city}.`,
+    blurb: `Селвидж деним и работно облекло, скроени в номерирани лотове във ${site.city.bg}.`,
+    copyright: (year) => `© ${year} ${site.brand}. Изработено във ${site.city.bg}, България.`,
     shop: "Магазин",
     help: "Помощ",
     studio: "Ателие",
@@ -515,8 +573,9 @@ const bg: Dict = {
     fabricCare: "Плат и поддръжка",
     fit: "Кройка",
     shipping: "Доставка и връщане",
-    shippingBody: `Тръгва от ателието до ${site.shippingDays}. Безплатно връщане на неносени дрехи до ${site.returnWindow}.`,
+    shippingBody: `Тръгва от ателието в рамките на ${dispatchBg}. Куриерска доставка в България ${eur(shipping.fee)}, безплатна над ${eur(shipping.freeFrom)}. Неносени дрехи могат да бъдат върнати до ${returnDays} дни.`,
     related: "Може да харесаш още",
+    priceNote: `С включен ${vatRate}% ДДС. Доставка ${eur(shipping.fee)}, безплатна над ${eur(shipping.freeFrom)}.`,
     size: "Размер",
     chooseSize: "Първо избери размер.",
     addToBag: "Добави в чантата",
@@ -537,12 +596,16 @@ const bg: Dict = {
     goToCheckout: "Към плащане",
     opening: "Отваряне на плащането",
     checkoutError: "Плащането не можа да започне. Опитай отново след малко.",
-    secure: `Сигурно плащане чрез Stripe. Безплатно връщане до ${site.returnWindow}.`,
+    secure: `Сигурно плащане чрез Stripe. Цените са с включен ${vatRate}% ДДС. Връщане до ${returnDays} дни.`,
     notConnected: "Плащането ще се отвори, след като плащанията бъдат свързани.",
     summary: "Обобщение на поръчката",
     subtotalCount: (n) => `Междинна сума (${n} ${n === 1 ? "брой" : "броя"})`,
     shipping: "Доставка",
     shippingCalc: "Изчислява се при плащане",
+    shippingFree: "Безплатна",
+    freeShippingLeft: (amount) => `Добави още ${amount} за безплатна доставка`,
+    freeShippingDone: "Безплатна доставка в България",
+    vat: `С включен ${vatRate}% ДДС`,
     total: "Общо",
     continue: "Продължи пазаруването",
     size: "Размер",
@@ -561,6 +624,8 @@ const bg: Dict = {
     lowStock: (n, name) => `Остават само ${n} бр. от ${name}. Намали количеството, за да продължиш.`,
     noPage: "Stripe не върна страница за плащане. Опитай отново.",
     size: (size) => `Размер ${size}`,
+    courier: "Куриерска доставка в България",
+    courierFree: "Безплатна куриерска доставка в България",
   },
   consent: {
     label: "Съгласие за анализи",
@@ -585,6 +650,8 @@ const bg: Dict = {
     size: "Размер",
     qty: "Брой",
     total: "Общо",
+    delivery: "Доставка",
+    free: "Безплатна",
   },
   unsubscribe: {
     eyebrow: "Бюлетин",
@@ -612,34 +679,67 @@ const bg: Dict = {
   },
   legal: {
     back: "Обратно към магазина",
-    draft: "Чернова. Преди старта заменете всеки раздел с текст, проверен за вашия бизнес и юрисдикция.",
+    seller: "Търговец",
+    sellerPending: `${site.brand}, ${site.city.bg}, България. Контакт: ${email}. Наименованието на фирмата, ЕИК и адресът на управление ще бъдат добавени тук след регистрацията.`,
+    sellerDetails: (s) =>
+      `${s.name}, ЕИК ${s.eik}${s.vatNumber ? `, ДДС № ${s.vatNumber}` : ""}, ${s.address}. Контакт: ${email}.`,
+    updated: "Последна промяна: ноември 2026 г.",
     privacy: {
       title: "Политика за поверителност",
       sections: [
-        { heading: "Кои сме ние", body: "{{юридическо име, адрес и имейл за контакт}}" },
         {
           heading: "Какво събираме",
-          body: "Имейл адреса ти, ако се абонираш за новини за колекциите, и данните, които въвеждаш при плащане, за да изпълним поръчката ти.",
+          body: "При поръчка: име, имейл, телефон, адрес за доставка и какво купуваш. Данните на картата отиват директно в Stripe и никога не достигат до нас. Ако се абонираш за бюлетина: имейл адреса ти.",
+        },
+        {
+          heading: "Защо ги използваме",
+          body: "За да доставим поръчката ти и да ти помогнем с нея, за да водим счетоводните и данъчните записи, които изисква законът, и само ако се абонираш, за да ти пишем за нови колекции. Всеки бюлетин има линк за отписване с едно натискане.",
+        },
+        {
+          heading: "С кого ги споделяме",
+          body: "Stripe (плащания), Supabase (базата данни за поръчки и бюлетин), Resend (имейли), Vercel (хостинг) и Sentry (доклади за грешки). Куриерът получава името, телефона и адреса ти, за да достави пратката. Ако приемеш анализите, PostHog (ЕС) записва анонимизирани посещения и сесии, като всички полета във формите са скрити.",
         },
         {
           heading: "Съхранение на устройството ти",
-          body: "Чантата и езикът ти се пазят в браузъра, за да са там, когато се върнеш. Анализите работят само ако ги приемеш.",
+          body: "Чантата, езикът и темата ти се пазят в браузъра, за да са там, когато се върнеш. Анализите работят само ако ги приемеш.",
         },
-        { heading: "С кого ги споделяме", body: "{{доставчици на плащане, доставка и имейл}}" },
-        { heading: "Твоите права", body: "{{как да видиш, коригираш или изтриеш данните си}}" },
+        {
+          heading: "Колко време ги пазим",
+          body: "Данните за поръчките толкова, колкото изисква българското данъчно законодателство. Имейлите за бюлетина, докато не се отпишеш.",
+        },
+        {
+          heading: "Твоите права",
+          body: `Можеш да поискаш достъп, корекция, изтриване или копие на данните си или да възразиш срещу начина, по който ги използваме, като пишеш на ${email}. Можеш също да подадеш жалба до Комисията за защита на личните данни (cpdp.bg).`,
+        },
       ],
     },
     terms: {
       title: "Условия за продажба",
       sections: [
-        { heading: "Поръчки", body: "{{кога се сключва договорът и как се потвърждават поръчките}}" },
-        { heading: "Цени и плащане", body: "{{валута, данъци и приети начини на плащане}}" },
-        { heading: "Доставка", body: `Поръчките тръгват от ателието до ${site.shippingDays}. {{региони и цени}}` },
         {
-          heading: "Връщане и възстановяване",
-          body: `Неносени дрехи с етикетите си могат да бъдат върнати до ${site.returnWindow} от доставката. {{как се започва връщане и кой плаща обратната доставка}}`,
+          heading: "Поръчки",
+          body: "Поръчката ти е приета, когато плащането мине успешно и ти изпратим имейл с потвърждение и номер на поръчката. Ако някой модел се окаже недостъпен, ще ти съобщим и ще възстановим сумата изцяло.",
         },
-        { heading: "Контакт", body: "{{данни за контакт с ателието}}" },
+        {
+          heading: "Цени и плащане",
+          body: `Цените са в евро и включват ${vatRate}% ДДС. Приемаме Visa, Mastercard, American Express, Apple Pay и Google Pay чрез Stripe.`,
+        },
+        {
+          heading: "Доставка",
+          body: `Доставяме с куриер в рамките на България. Поръчките тръгват от ателието в рамките на ${dispatchBg}. Доставката струва ${eur(shipping.fee)} и е безплатна за поръчки на стойност ${eur(shipping.freeFrom)} или повече.`,
+        },
+        {
+          heading: "Връщане и право на отказ",
+          body: `Можеш да се откажеш от покупката до ${returnDays} дни след като я получиш, без да посочваш причина. Пиши на ${email}, за да започнеш връщане, и изпрати дрехата неносена, с етикетите. Обратната доставка е за твоя сметка. Възстановяваме цената и първоначалната доставка по картата ти до 14 дни след като получим дрехата.`,
+        },
+        {
+          heading: "Дефектни дрехи",
+          body: "Ако нещо пристигне повредено или с дефект, изпрати ни снимка и ще го поправим, заменим или възстановим сумата, включително доставката. Това не засяга законовата ти гаранция по българското законодателство за защита на потребителите.",
+        },
+        {
+          heading: "Въпроси и жалби",
+          body: `Пиши на ${email} и ще ти отговори човек. Можеш също да се свържеш с Комисията за защита на потребителите (kzp.bg).`,
+        },
       ],
     },
   },

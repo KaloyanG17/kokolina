@@ -1,74 +1,41 @@
 /**
- * Everything the designer needs to fill in lives in this file.
- *
- * Any value written as {{like this}} is a placeholder for a real fact
- * (price, press quote, return window, ...). Replace it before launch;
- * none of these should be invented.
+ * Facts about the shop that the site, checkout and emails rely on. Text in
+ * both languages lives in src/i18n/dictionaries.ts and reads these values.
  */
 
 export const site = {
   brand: "Kokolina",
-  city: "{{city}}",
   url: "https://kokolina.vercel.app", // overridden by NEXT_PUBLIC_SITE_URL
-  description:
-    "Kokolina cuts selvedge denim and workwear in small numbered runs in {{city}}. Every seam is finished by hand.",
   currency: "EUR",
   locale: "en-IE",
-  pressMention: "{{press mention}}",
-  shippingDays: "{{shipping days}}",
-  returnWindow: "{{return window}}",
-  runSize: "{{run size}}",
-  mill: "{{mill name}}",
+  city: { en: "Varna", bg: "Варна" },
+  contactEmail: "kokolina2026@gmail.com" as string | null,
   // Leave null to hide the link in the footer.
-  contactEmail: null as string | null,
   instagram: null as string | null,
+
+  /** Working days between payment and the parcel leaving the studio. */
+  dispatchDays: { min: 3, max: 5 },
+  /** Days to return an unworn piece. EU law requires at least 14. The customer pays return shipping. */
+  returnDays: 14,
+  /** Prices include VAT at this rate. */
+  vatRate: 20,
+  shipping: {
+    /** ISO country codes checkout accepts. */
+    countries: ["BG"] as const,
+    /** Courier delivery in euros, and the order total from which it is free. */
+    fee: 5,
+    freeFrom: 150,
+  },
+
+  /**
+   * The trader's legal details, required on the terms and privacy pages under
+   * Bulgarian consumer law. Fill in once the business is registered; until
+   * then the legal pages show a notice instead.
+   */
+  seller: null as null | { name: string; eik: string; vatNumber?: string; address: string },
 };
 
-
-export const faqs = [
-  {
-    q: "How do I find my size?",
-    a: "Every product page has fit notes. If you sit between two sizes, write to us with your height and usual size and we will recommend one.",
-  },
-  {
-    q: "How long does shipping take?",
-    a: `Orders leave the studio within ${site.shippingDays}. You get a tracking link by email as soon as the parcel is collected.`,
-  },
-  {
-    q: "Can I return a piece?",
-    a: `Yes. Unworn pieces with their tags can be returned within ${site.returnWindow} of delivery for a full refund.`,
-  },
-  {
-    q: "Where are the fabrics from?",
-    a: `Our main cloths come from ${site.mill}. Each product page names the fabric and its fibre content.`,
-  },
-  {
-    q: "Why are some pieces made in limited numbers?",
-    a: `Each style is cut in runs of ${site.runSize} pieces. When a run sells out, it may come back in a later collection, but we do not promise it.`,
-  },
-  {
-    q: "How should I care for my piece?",
-    a: "Care instructions are sewn into every garment. Most tailoring should be dry cleaned and steamed rather than pressed with a hot iron.",
-  },
-  {
-    q: "Do you offer alterations?",
-    a: "{{alterations policy}}",
-  },
-  {
-    q: "Which payment methods do you accept?",
-    a: "{{payment methods}}",
-  },
-];
-
-export const testimonials = [
-  { quote: "{{testimonial}}", name: "{{customer name}}", detail: "{{city}}" },
-  { quote: "{{testimonial}}", name: "{{customer name}}", detail: "{{city}}" },
-  { quote: "{{testimonial}}", name: "{{customer name}}", detail: "{{city}}" },
-];
-
-export const press = [
-  "{{publication}}",
-  "{{publication}}",
-  "{{publication}}",
-  "{{publication}}",
-];
+/** Shipping for an order subtotal in euros: free from the threshold, otherwise the flat fee. */
+export function shippingFor(subtotal: number) {
+  return subtotal >= site.shipping.freeFrom ? 0 : site.shipping.fee;
+}

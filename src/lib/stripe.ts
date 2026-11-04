@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { site } from "@/data/site";
 import { env, has } from "@/lib/env";
 
 let client: Stripe | null = null;
@@ -13,8 +14,5 @@ export function stripe() {
 /** Item details stored on the Checkout Session so the webhook can rebuild the order. */
 export type CheckoutItem = { slug: string; name: string; size: string; qty: number; unitAmount: number };
 
-/** Countries the shop ships to. Adjust to match your shipping rates. */
-export const SHIPPING_COUNTRIES = [
-  "BG", "AT", "BE", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE",
-  "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "GB",
-] as const;
+/** Countries checkout accepts; set in src/data/site.ts with the delivery prices. */
+export const SHIPPING_COUNTRIES = site.shipping.countries;

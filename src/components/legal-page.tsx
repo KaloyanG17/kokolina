@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
+import { site } from "@/data/site";
 import { getT } from "@/i18n/server";
 
 export async function LegalPage({ page }: { page: "privacy" | "terms" }) {
@@ -15,10 +16,17 @@ export async function LegalPage({ page }: { page: "privacy" | "terms" }) {
           <ArrowLeft size={16} aria-hidden />
           {legal.back}
         </Link>
-        <h1 className="heading-4 md:heading-3 text-hero-gradient">{title}</h1>
-        <p className="body-6 rounded-md border border-line bg-surface p-4 text-muted">
-          {legal.draft}
-        </p>
+        <div className="flex flex-col gap-2">
+          <h1 className="heading-4 md:heading-3 text-hero-gradient">{title}</h1>
+          <p className="caption-5 font-mono uppercase tracking-widest text-muted">{legal.updated}</p>
+        </div>
+        {/* The trader's identity, required by Bulgarian consumer law */}
+        <section className="stitched flex flex-col gap-2 rounded-md border border-line bg-surface p-6 [--stitch:var(--color-line)]">
+          <h2 className="title-2 relative z-[2]">{legal.seller}</h2>
+          <p className="body-6 relative z-[2] text-muted">
+            {site.seller ? legal.sellerDetails(site.seller) : legal.sellerPending}
+          </p>
+        </section>
         {sections.map((s) => (
           <section key={s.heading} className="flex flex-col gap-2">
             <h2 className="heading-6">{s.heading}</h2>

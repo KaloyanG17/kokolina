@@ -7,7 +7,7 @@ import { Hero } from "@/components/hero";
 import { ProductGrid } from "@/components/product-card";
 import { Reveal } from "@/components/reveal";
 import { TaglineReveal } from "@/components/tagline-reveal";
-import { Craft, Faq, FinalCta, Ordering, Proof } from "@/components/sections";
+import { Craft, Faq, FinalCta, Ordering } from "@/components/sections";
 
 export default async function Home() {
   const locale = await getLocale();
@@ -55,7 +55,6 @@ export default async function Home() {
       <TaglineReveal />
       <Craft campaign={images.campaign} />
       <Ordering />
-      <Proof />
       <Faq />
       <FinalCta />
     </>

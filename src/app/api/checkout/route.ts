@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getProducts } from "@/lib/catalog";
+import { shippingFor, site } from "@/data/site";
 import { env } from "@/lib/env";
 import { dictionaries } from "@/i18n/dictionaries";
 import { getLocale } from "@/i18n/server";
@@ -55,6 +56,10 @@ export async function POST(req: Request) {
     });
   }
 
+  // Courier delivery in Bulgaria: flat fee, free from the threshold
+  const subtotal = items.reduce((sum, i) => sum + i.unitAmount * i.qty, 0) / 100;
+  const deliveryFee = shippingFor(subtotal);
+
   const origin = env.siteUrl.replace(/\/$/, "");
   // Picture shown next to each item in Stripe Checkout: the first photo, or the engraved drawing as a PNG
   const imageFor = (slug: string) =>
@@ -77,6 +82,21 @@ export async function POST(req: Request) {
       },
     })),
     shipping_address_collection: { allowed_countries: [...SHIPPING_COUNTRIES] },
+    shipping_options: [
+      {
+        shipping_rate_data: {
+          type: "fixed_amount",
+          display_name: deliveryFee ? t.courier : t.courierFree,
+          fixed_amount: { amount: Math.round(deliveryFee * 100), currency: "eur" },
+          tax_behavior: "inclusive",
+          // Dispatch time plus a day or two with the courier
+          delivery_estimate: {
+            minimum: { unit: "business_day", value: site.dispatchDays.min + 1 },
+            maximum: { unit: "business_day", value: site.dispatchDays.max + 2 },
+          },
+        },
+      },
+    ],
     phone_number_collection: { enabled: true },
     billing_address_collection: "auto",
     // Compact copy of the order for the webhook (Stripe metadata values max 500 chars)

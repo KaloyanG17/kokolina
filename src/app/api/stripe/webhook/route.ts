@@ -90,7 +90,8 @@ export async function POST(req: Request) {
   const total = (session.amount_total ?? 0) / 100;
   const reference = session.id.slice(-10).toUpperCase();
   try {
-    if (email) await sendOrderConfirmation(email, { reference, items, total }, session.metadata?.lang);
+    const delivery = (session.shipping_cost?.amount_total ?? 0) / 100;
+    if (email) await sendOrderConfirmation(email, { reference, items, total, delivery }, session.metadata?.lang);
     await notifyAdminOfOrder({ reference, email: email ?? "unknown", total, itemCount: items.reduce((n, i) => n + i.qty, 0) });
   } catch (e) {
     Sentry.captureException(e, { extra: { session: session.id, step: "order emails" } });

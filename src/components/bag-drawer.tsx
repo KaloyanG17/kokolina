@@ -7,7 +7,7 @@ import { CheckCircle, Handbag, X } from "@phosphor-icons/react";
 import { formatPrice } from "@/lib/format";
 import { useT } from "@/i18n/client";
 import { useBag } from "./bag-provider";
-import { BagLines, BagSkeleton, useBagItems } from "./bag-lines";
+import { BagLines, BagSkeleton, FreeShippingBar, useBagItems } from "./bag-lines";
 import { CheckoutButton } from "./checkout-button";
 
 /** Sidebar bag. Opens from the nav and whenever a piece is added. */
@@ -94,6 +94,7 @@ export function BagDrawer() {
 
         {ready && items.length > 0 && (
           <div className="flex flex-col gap-3 bg-surface-2 p-6">
+            <FreeShippingBar subtotal={subtotal} />
             <div className="flex items-center justify-between">
               <span className="body-5 text-muted">{bag.subtotal}</span>
               <span className="title-3 tabular-nums">{formatPrice(subtotal)}</span>

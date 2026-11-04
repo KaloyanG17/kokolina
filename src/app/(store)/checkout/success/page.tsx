@@ -84,6 +84,14 @@ export default async function CheckoutSuccess({ searchParams }: { searchParams: 
                 <span className="body-5 font-mono tabular-nums">{formatPrice(line.total)}</span>
               </li>
             ))}
+            {session?.shipping_cost && (
+              <li className="body-6 flex justify-between gap-4 px-3 py-1 text-muted">
+                <span>{copy.delivery}</span>
+                <span className="font-mono tabular-nums">
+                  {session.shipping_cost.amount_total ? formatPrice(session.shipping_cost.amount_total / 100) : copy.free}
+                </span>
+              </li>
+            )}
             <li className="flex justify-between gap-4 rounded-sm bg-surface-2 p-3">
               <span className="title-3">{copy.total}</span>
               <span className="title-3 font-mono tabular-nums">{formatPrice((session?.amount_total ?? 0) / 100)}</span>

@@ -113,6 +113,7 @@ export default async function ProductPage({ params }: Props) {
                 </p>
                 <h1 className="heading-4 md:heading-3">{product.name}</h1>
                 <PriceTag price={product.price} className="self-start" />
+                <p className="caption-5 text-muted">{t.product.priceNote}</p>
                 <p className="caption-2 text-muted">
                   {product.colour} · {product.fabric}
                 </p>

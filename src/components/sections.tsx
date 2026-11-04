@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Drop, Needle, Plus, Quotes, Ruler, Stack } from "@phosphor-icons/react/dist/ssr";
-import { press, testimonials } from "@/data/site";
+import { ArrowRight, Drop, Needle, Plus, Ruler, Stack } from "@phosphor-icons/react/dist/ssr";
 import { getT } from "@/i18n/server";
 import { AtelierScene } from "./product-art";
 import { Reveal } from "./reveal";
@@ -100,43 +99,6 @@ export async function Ordering() {
   );
 }
 
-export async function Proof() {
-  const { proof } = await getT();
-  return (
-    <section aria-labelledby="proof-title" className="px-4 py-24 md:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-12">
-        <SectionHeader id="proof-title" index="04" title={proof.title} />
-        <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {testimonials.map((t, i) => (
-            <li key={i}>
-              <Reveal className="stitched flex h-full flex-col gap-6 rounded-md border border-line bg-surface p-6 [--stitch:var(--color-line)]">
-                <Quotes size={24} weight="fill" className="text-thread" aria-hidden />
-                <blockquote className="body-2 flex-1">{t.quote}</blockquote>
-                <p className="caption-4 font-mono uppercase tracking-wider text-muted">
-                  {t.name}, {t.detail}
-                </p>
-              </Reveal>
-            </li>
-          ))}
-        </ul>
-        <Reveal className="flex flex-col gap-4">
-          <p className="caption-3 font-mono uppercase tracking-widest text-muted">{proof.press}</p>
-          <ul className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {press.map((p, i) => (
-              <li
-                key={i}
-                className="title-3 flex h-20 items-center justify-center rounded-md border border-dashed border-line text-muted"
-              >
-                {p}
-              </li>
-            ))}
-          </ul>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
 export async function Faq() {
   const { faq } = await getT();
   return (
@@ -144,7 +106,7 @@ export async function Faq() {
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 lg:grid-cols-[1fr_2fr]">
         <SectionHeader
           id="faq-title"
-          index="05"
+          index="04"
           title={faq.title}
           intro={faq.intro}
         />

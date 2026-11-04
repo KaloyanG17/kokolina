@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Minus, Plus } from "@phosphor-icons/react";
+import { Check, Minus, Plus } from "@phosphor-icons/react";
+import { site } from "@/data/site";
 import { formatPrice } from "@/lib/format";
 import { useT } from "@/i18n/client";
 import { useBag } from "./bag-provider";
@@ -108,5 +109,30 @@ function QtyButton({ label, onClick, children }: { label: string; onClick: () =>
     >
       {children}
     </button>
+  );
+}
+
+/** How close the bag is to free delivery, drawn as a seam being sewn along a selvedge line. */
+export function FreeShippingBar({ subtotal }: { subtotal: number }) {
+  const { bag } = useT();
+  const left = site.shipping.freeFrom - subtotal;
+  const done = left <= 0;
+  const share = Math.min(1, subtotal / site.shipping.freeFrom);
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="caption-1 flex items-center gap-2 text-fg">
+        {done && <Check size={14} weight="bold" aria-hidden className="text-thread" />}
+        {done ? bag.freeShippingDone : bag.freeShippingLeft(formatPrice(left))}
+      </p>
+      <div aria-hidden className="relative h-2 overflow-hidden rounded-full bg-surface-3">
+        <div
+          className="h-full rounded-full transition-[width] duration-700 ease-brand"
+          style={{
+            width: `${share * 100}%`,
+            backgroundImage: "repeating-linear-gradient(90deg, var(--color-thread) 0 10px, transparent 10px 15px)",
+          }}
+        />
+      </div>
+    </div>
   );
 }

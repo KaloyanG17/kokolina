@@ -5,13 +5,15 @@ import { Handbag } from "@phosphor-icons/react";
 import { formatPrice } from "@/lib/format";
 import { useT } from "@/i18n/client";
 import { useBag } from "./bag-provider";
-import { BagLines, BagSkeleton, useBagItems } from "./bag-lines";
+import { BagLines, BagSkeleton, FreeShippingBar, useBagItems } from "./bag-lines";
+import { shippingFor } from "@/data/site";
 import { CheckoutButton } from "./checkout-button";
 
 export function BagPageContent() {
   const { bag } = useT();
   const { ready, count, checkoutEnabled } = useBag();
   const { items, subtotal } = useBagItems();
+  const delivery = shippingFor(subtotal);
 
   if (!ready) return <BagSkeleton rows={3} />;
 
@@ -40,6 +42,7 @@ export function BagPageContent() {
         <h2 id="summary-title" className="heading-6">
           {bag.summary}
         </h2>
+        <FreeShippingBar subtotal={subtotal} />
         <dl className="flex flex-col gap-3">
           <div className="flex justify-between">
             <dt className="body-6 text-muted">
@@ -49,11 +52,14 @@ export function BagPageContent() {
           </div>
           <div className="flex justify-between">
             <dt className="body-6 text-muted">{bag.shipping}</dt>
-            <dd className="body-6 text-muted">{bag.shippingCalc}</dd>
+            <dd className="body-5 tabular-nums">{delivery ? formatPrice(delivery) : bag.shippingFree}</dd>
           </div>
           <div className="flex justify-between rounded-sm bg-surface-2 p-3">
-            <dt className="title-3">{bag.total}</dt>
-            <dd className="title-3 tabular-nums">{formatPrice(subtotal)}</dd>
+            <dt className="flex flex-col">
+              <span className="title-3">{bag.total}</span>
+              <span className="caption-5 text-muted">{bag.vat}</span>
+            </dt>
+            <dd className="title-3 tabular-nums">{formatPrice(subtotal + delivery)}</dd>
           </div>
         </dl>
         <CheckoutButton label={bag.goToCheckout} className="button-lg w-full py-3" />
