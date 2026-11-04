@@ -4,47 +4,68 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { Handbag, MagnifyingGlass } from "@phosphor-icons/react";
-import { site } from "@/data/site";
+import { useT } from "@/i18n/client";
+import type { Dict } from "@/i18n/dictionaries";
 import { useBag } from "./bag-provider";
+import { LanguageSwitch } from "./language-switch";
 import { ThemeToggle } from "./theme-toggle";
+import { Wordmark } from "./wordmark";
 
-type NavLink = { key: string; href: string; label: string };
+/** `mark` links show the red dot wordmark in place of their label, which stays for screen readers. */
+type NavLink = { key: string; href: string; label: string; mark?: boolean };
 
-const links: NavLink[] = [
-  { key: "shop", href: "/shop", label: "Shop all" },
-  { key: "Jeans", href: "/shop?category=Jeans", label: "Jeans" },
-  { key: "Jackets", href: "/shop?category=Jackets", label: "Jackets" },
-  { key: "Shirts", href: "/shop?category=Shirts", label: "Shirts" },
-];
+const CATEGORY_LINKS = ["Jeans", "Jackets", "Shirts"] as const;
 
-const menuOnly: NavLink[] = [
-  { key: "bag", href: "/bag", label: "Your bag" },
-  { key: "faq", href: "/#faq", label: "Questions" },
-];
+function navLinks(t: Dict): NavLink[] {
+  return [
+    { key: "shop", href: "/shop", label: t.nav.shopAll },
+    ...CATEGORY_LINKS.map((c) => ({ key: c, href: `/shop?category=${c}`, label: t.categories[c] })),
+    { key: "exclusive", href: "/exclusive", label: t.nav.exclusive, mark: true },
+  ];
+}
+
+function menuOnlyLinks(t: Dict): NavLink[] {
+  return [
+    { key: "bag", href: "/bag", label: t.nav.yourBag },
+    { key: "faq", href: "/#faq", label: t.nav.questions },
+  ];
+}
+
+function LinkLabel({ link }: { link: NavLink }) {
+  if (!link.mark) return <>{link.label}</>;
+  return (
+    <>
+      <span className="sr-only">{link.label}</span>
+      <Wordmark dot="red" className="[&>.sr-only]:hidden" />
+    </>
+  );
+}
 
 /** Works out which nav item is current. Reads the URL, so it renders inside Suspense. */
 function useActiveKey() {
   const pathname = usePathname();
   const params = useSearchParams();
   if (pathname === "/bag") return "bag";
+  if (pathname === "/exclusive") return "exclusive";
   if (pathname !== "/shop") return null;
   const category = params.get("category");
-  return category && links.some((l) => l.key === category) ? category : "shop";
+  return category && (CATEGORY_LINKS as readonly string[]).includes(category) ? category : "shop";
 }
 
 function DesktopLinks({ active }: { active: string | null }) {
+  const links = navLinks(useT());
   return (
-    <ul className="hidden items-center gap-1 md:flex">
+    <ul className="hidden items-center gap-1 lg:flex">
       {links.map((l) => (
         <li key={l.key}>
           <Link
             href={l.href}
             aria-current={active === l.key ? "page" : undefined}
-            className={`title-4 focus-ring block rounded-sm px-3 py-2 uppercase tracking-wide transition-colors duration-300 ease-brand hover:bg-surface-3 hover:text-fg ${
+            className={`title-4 focus-ring flex items-center gap-1.5 rounded-sm px-3 py-2 uppercase tracking-wide transition-colors duration-300 ease-brand hover:bg-surface-3 hover:text-fg ${
               active === l.key ? "bg-surface-3 text-fg" : "text-muted"
             }`}
           >
-            {l.label}
+            <LinkLabel link={l} />
           </Link>
         </li>
       ))}
@@ -57,9 +78,10 @@ function ActiveDesktopLinks() {
 }
 
 function MenuLinks({ active, open, onPick }: { active: string | null; open: boolean; onPick: () => void }) {
+  const t = useT();
   return (
     <ul className="flex h-full flex-col justify-center gap-4 px-6">
-      {[...links, ...menuOnly].map((l, i) => (
+      {[...navLinks(t), ...menuOnlyLinks(t)].map((l, i) => (
         <li
           key={l.key}
           style={{ transitionDelay: open ? `${Math.min(i * 60, 400)}ms` : "0ms" }}
@@ -71,12 +93,18 @@ function MenuLinks({ active, open, onPick }: { active: string | null; open: bool
             href={l.href}
             onClick={onPick}
             aria-current={active === l.key ? "page" : undefined}
-            className={`heading-4 focus-ring block rounded-lg py-2 ${active === l.key ? "text-ink" : "text-muted"}`}
+            className={`heading-4 focus-ring flex items-center gap-3 rounded-lg py-2 ${active === l.key ? "text-ink" : "text-muted"}`}
           >
-            {l.label}
+            <LinkLabel link={l} />
           </Link>
         </li>
       ))}
+      <li
+        style={{ transitionDelay: open ? "400ms" : "0ms" }}
+        className={`pt-4 transition-[opacity,transform] duration-500 ease-brand ${open ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"}`}
+      >
+        <LanguageSwitch className="w-fit" />
+      </li>
     </ul>
   );
 }
@@ -86,6 +114,7 @@ function ActiveMenuLinks(props: { open: boolean; onPick: () => void }) {
 }
 
 export function Nav() {
+  const t = useT();
   const pathname = usePathname();
   const { count, ready, open: openBag } = useBag();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -105,7 +134,7 @@ export function Nav() {
     <>
       <header className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
         <nav
-          aria-label="Main"
+          aria-label={t.nav.main}
           className="flex items-center gap-1 rounded-lg border border-line bg-surface/80 p-1 backdrop-blur-md"
         >
           <Link
@@ -113,7 +142,7 @@ export function Nav() {
             aria-current={pathname === "/" ? "page" : undefined}
             className="label-tag patch title-4 focus-ring mr-1 transition-transform duration-300 ease-brand hover:-rotate-2 md:mr-3"
           >
-            &quot;{site.brand}&quot;
+            <Wordmark />
           </Link>
 
           <Suspense fallback={<DesktopLinks active={null} />}>
@@ -121,10 +150,11 @@ export function Nav() {
           </Suspense>
 
           <ThemeToggle />
+          <LanguageSwitch className="mx-1 hidden sm:flex" />
 
           <Link
             href="/shop"
-            aria-label="Search the shop"
+            aria-label={t.nav.search}
             className="focus-ring hidden size-10 items-center justify-center rounded-sm text-muted transition-colors duration-300 ease-brand hover:bg-surface-3 hover:text-fg sm:flex"
           >
             <MagnifyingGlass size={18} aria-hidden />
@@ -136,8 +166,8 @@ export function Nav() {
             className="btn-primary button-sm"
           >
             <Handbag size={16} weight="bold" aria-hidden />
-            <span>Bag</span>
-            <span className="sr-only">, {count} items</span>
+            <span>{t.nav.bag}</span>
+            <span className="sr-only">{t.nav.items(count)}</span>
             <span
               aria-hidden
               className={`min-w-4 text-center tabular-nums transition-opacity duration-300 ease-brand ${
@@ -153,8 +183,8 @@ export function Nav() {
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            className="focus-ring relative flex size-10 items-center justify-center rounded-sm transition-colors duration-300 ease-brand hover:bg-surface-3 md:hidden"
+            aria-label={menuOpen ? t.nav.closeMenu : t.nav.openMenu}
+            className="focus-ring relative flex size-10 items-center justify-center rounded-sm transition-colors duration-300 ease-brand hover:bg-surface-3 lg:hidden"
           >
             <span
               aria-hidden
@@ -175,7 +205,7 @@ export function Nav() {
       <div
         id="mobile-menu"
         inert={!menuOpen}
-        className={`fixed inset-0 z-40 bg-base/90 backdrop-blur-xl transition-opacity duration-500 ease-brand md:hidden ${
+        className={`fixed inset-0 z-40 bg-base/90 backdrop-blur-xl transition-opacity duration-500 ease-brand lg:hidden ${
           menuOpen ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       >

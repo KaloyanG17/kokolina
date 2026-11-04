@@ -1,17 +1,19 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { categories } from "@/data/products";
 import { requireAdmin, type ActionState } from "@/lib/admin";
+import { CATALOG_TAG } from "@/lib/catalog";
 import { sendNewsletter } from "@/lib/email";
 import { has } from "@/lib/env";
 import { userClient } from "@/lib/supabase/server";
 
 /** Storefront pages are statically cached; refresh them after any catalogue change. */
 function refreshStore() {
+  revalidateTag(CATALOG_TAG);
   revalidatePath("/", "layout");
 }
 
@@ -63,6 +65,12 @@ const ProductInput = z.object({
   description: z.string().trim().max(2000),
   fit: z.string().trim().max(500),
   care: z.string().trim().max(500),
+  name_bg: z.string().trim().max(120).default(""),
+  colour_bg: z.string().trim().max(60).default(""),
+  fabric_bg: z.string().trim().max(120).default(""),
+  description_bg: z.string().trim().max(2000).default(""),
+  fit_bg: z.string().trim().max(500).default(""),
+  care_bg: z.string().trim().max(500).default(""),
   sizes: z.string().trim().min(1, "List at least one size."),
   art: z.enum(["jeans", "trucker", "chore", "western", "dress", "skirt", "overalls", "sweat"]),
   wash: z.enum(["raw", "rinse", "light", "ecru"]),
@@ -93,6 +101,12 @@ export async function saveProduct(_: ActionState, form: FormData): Promise<Actio
     description: p.description,
     fit: p.fit,
     care: p.care,
+    name_bg: p.name_bg,
+    colour_bg: p.colour_bg,
+    fabric_bg: p.fabric_bg,
+    description_bg: p.description_bg,
+    fit_bg: p.fit_bg,
+    care_bg: p.care_bg,
     sizes: p.sizes
       .split(",")
       .map((s) => s.trim())
@@ -103,6 +117,7 @@ export async function saveProduct(_: ActionState, form: FormData): Promise<Actio
     is_new: form.get("is_new") === "on",
     sold_out: form.get("sold_out") === "on",
     published: form.get("published") === "on",
+    exclusive: form.get("exclusive") === "on",
   };
 
   const query = p.id ? db.from("products").update(row).eq("id", p.id) : db.from("products").insert(row);

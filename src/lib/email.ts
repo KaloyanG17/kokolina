@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import { site } from "@/data/site";
 import { env, has } from "@/lib/env";
 import { formatPrice } from "@/lib/format";
+import { defaultLocale, isLocale, type Locale } from "@/i18n/config";
 
 /**
  * Transactional and newsletter email through Resend. Every send is a no-op
@@ -33,7 +34,7 @@ function layout(body: string, footer: string) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3efe6;padding:32px 16px;"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#faf7f0;border:1px solid #d6cdb9;">
 <tr><td style="padding:24px 24px 0;">
-  <span style="display:inline-block;background:#141414;color:#f3efe6;padding:8px 16px;font-size:14px;letter-spacing:2px;font-weight:600;border-left:2px dashed #d68a2e;border-right:2px dashed #d68a2e;">&quot;${esc(site.brand.toUpperCase())}&quot;</span>
+  <span style="display:inline-block;background:#141414;color:#f3efe6;padding:8px 16px;font-size:14px;letter-spacing:2px;font-weight:600;border:2px dashed #d68a2e;outline:4px solid #141414;">${esc(site.brand.toUpperCase().replace("I", "İ"))}</span>
 </td></tr>
 <tr><td style="padding:24px;">${body}</td></tr>
 <tr><td style="padding:0 24px;"><div style="border-top:2px dashed #d68a2e;"></div></td></tr>
@@ -50,30 +51,76 @@ function unsubscribeHeader(token: string) {
   return `<${env.siteUrl}/api/unsubscribe?token=${encodeURIComponent(token)}>`;
 }
 
-function newsletterFooter(token: string) {
-  return `You are receiving this because you joined the ${esc(site.brand)} list. <a href="${unsubscribeUrl(token)}" style="color:#23366e;">Unsubscribe</a>.`;
+/** Customer facing email text in both shop languages. */
+const copy = {
+  en: {
+    listFooter: (url: string) =>
+      `You are receiving this because you joined the ${esc(site.brand)} list. <a href="${url}" style="color:#23366e;">Unsubscribe</a>.`,
+    welcomeSubject: `Welcome to ${site.brand}`,
+    welcomeTitle: "You are on the list",
+    welcomeBody:
+      "Thanks for joining. We will write when the next lot comes off the cutting table, and not much more often than that.\n\nEvery piece is cut in small numbered runs, so the list hears first.",
+    shopCta: "SHOP THE DENIM",
+    orderSubject: `Your ${site.brand} order is confirmed`,
+    orderTitle: "Thank you, your order is in",
+    orderBody: `We have your order and will pack it in the studio. You will get another email with tracking when it leaves, within ${site.shippingDays}.`,
+    size: "Size",
+    qty: "Qty",
+    total: "Total",
+    reference: "Reference",
+    orderFooter: `Questions about your order? Reply to this email. Free returns within ${esc(site.returnWindow)}.`,
+  },
+  bg: {
+    listFooter: (url: string) =>
+      `Получаваш този имейл, защото се абонира за бюлетина на ${esc(site.brand)}. <a href="${url}" style="color:#23366e;">Отписване</a>.`,
+    welcomeSubject: `Добре дошъл в ${site.brand}`,
+    welcomeTitle: "Вече си в списъка",
+    welcomeBody:
+      "Благодарим, че се присъедини. Ще пишем, когато следващият лот слезе от кроячната маса, и не много по-често от това.\n\nВсеки модел се крои в малки номерирани серии, затова списъкът научава първи.",
+    shopCta: "РАЗГЛЕДАЙ ДЕНИМА",
+    orderSubject: `Поръчката ти от ${site.brand} е потвърдена`,
+    orderTitle: "Благодарим, поръчката ти е приета",
+    orderBody: `Получихме поръчката ти и ще я опаковаме в ателието. Ще получиш още един имейл с номер за проследяване, когато тръгне, до ${site.shippingDays}.`,
+    size: "Размер",
+    qty: "Брой",
+    total: "Общо",
+    reference: "Номер",
+    orderFooter: `Въпроси за поръчката? Отговори на този имейл. Безплатно връщане до ${esc(site.returnWindow)}.`,
+  },
+};
+
+const copyFor = (locale: unknown) => copy[isLocale(locale) ? locale : defaultLocale];
+
+function newsletterFooter(token: string, locale: Locale = defaultLocale) {
+  return copy[locale].listFooter(unsubscribeUrl(token));
 }
 
-export async function sendWelcome(to: string, token: string) {
+export async function sendWelcome(to: string, token: string, locale: Locale = defaultLocale) {
   const r = resend();
   if (!r) return { skipped: true as const };
-  const body = `<h1 style="margin:0 0 16px;font-size:24px;line-height:32px;">You are on the list</h1>
-${textToHtml(`Thanks for joining. We will write when the next lot comes off the cutting table, and not much more often than that.\n\nEvery piece is cut in small numbered runs, so the list hears first.`)}
-<a href="${env.siteUrl}/shop" style="display:inline-block;background:#141414;color:#f3efe6;padding:8px 16px;text-decoration:none;font-weight:600;letter-spacing:1px;">&quot;SHOP THE DENIM&quot;</a>`;
+  const c = copy[locale];
+  const body = `<h1 style="margin:0 0 16px;font-size:24px;line-height:32px;">${c.welcomeTitle}</h1>
+${textToHtml(c.welcomeBody)}
+<a href="${env.siteUrl}/shop" style="display:inline-block;background:#141414;color:#f3efe6;padding:8px 16px;text-decoration:none;font-weight:600;letter-spacing:1px;border:2px dashed #d68a2e;outline:3px solid #141414;">${c.shopCta}</a>`;
   return r.emails.send({
     from: env.emailFrom,
     to,
-    subject: `Welcome to ${site.brand}`,
-    html: layout(body, newsletterFooter(token)),
+    subject: c.welcomeSubject,
+    html: layout(body, newsletterFooter(token, locale)),
     headers: { "List-Unsubscribe": unsubscribeHeader(token), "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
   });
 }
 
 export type OrderEmailItem = { name: string; size: string; qty: number; unitAmount: number; image?: string | null };
 
-export async function sendOrderConfirmation(to: string, order: { reference: string; items: OrderEmailItem[]; total: number }) {
+export async function sendOrderConfirmation(
+  to: string,
+  order: { reference: string; items: OrderEmailItem[]; total: number },
+  locale?: unknown,
+) {
   const r = resend();
   if (!r) return { skipped: true as const };
+  const c = copyFor(locale);
   const rows = order.items
     .map(
       (i) => `<tr><td width="64" style="padding:8px 12px 8px 0;border-bottom:1px dashed #d6cdb9;">${
@@ -81,20 +128,20 @@ export async function sendOrderConfirmation(to: string, order: { reference: stri
           ? `<img src="${esc(i.image)}" width="56" height="75" alt="${esc(i.name)}" style="display:block;width:56px;height:75px;object-fit:cover;border:1px solid #d6cdb9;background:#ebe5d8;" />`
           : ""
       }</td>
-<td style="padding:8px 0;border-bottom:1px dashed #d6cdb9;">${esc(i.name)}<br/><span style="color:#5c6070;font-size:12px;">Size ${esc(i.size)} · Qty ${i.qty}</span></td>
+<td style="padding:8px 0;border-bottom:1px dashed #d6cdb9;">${esc(i.name)}<br/><span style="color:#5c6070;font-size:12px;">${c.size} ${esc(i.size)} · ${c.qty} ${i.qty}</span></td>
 <td align="right" style="padding:8px 0;border-bottom:1px dashed #d6cdb9;font-family:monospace;">${formatPrice(i.unitAmount * i.qty)}</td></tr>`,
     )
     .join("");
-  const body = `<h1 style="margin:0 0 16px;font-size:24px;line-height:32px;">Thank you, your order is in</h1>
-${textToHtml(`We have your order and will pack it in the studio. You will get another email with tracking when it leaves, within ${site.shippingDays}.`)}
+  const body = `<h1 style="margin:0 0 16px;font-size:24px;line-height:32px;">${c.orderTitle}</h1>
+${textToHtml(c.orderBody)}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;line-height:20px;">${rows}
-<tr><td colspan="2" style="padding:12px 0;font-weight:600;">Total</td><td align="right" style="padding:12px 0;font-weight:600;font-family:monospace;">${formatPrice(order.total)}</td></tr></table>
-<p style="margin:16px 0 0;font-size:12px;color:#5c6070;font-family:monospace;">Reference ${esc(order.reference)}</p>`;
+<tr><td colspan="2" style="padding:12px 0;font-weight:600;">${c.total}</td><td align="right" style="padding:12px 0;font-weight:600;font-family:monospace;">${formatPrice(order.total)}</td></tr></table>
+<p style="margin:16px 0 0;font-size:12px;color:#5c6070;font-family:monospace;">${c.reference} ${esc(order.reference)}</p>`;
   return r.emails.send({
     from: env.emailFrom,
     to,
-    subject: `Your ${site.brand} order is confirmed`,
-    html: layout(body, `Questions about your order? Reply to this email. Free returns within ${esc(site.returnWindow)}.`),
+    subject: c.orderSubject,
+    html: layout(body, c.orderFooter),
   });
 }
 

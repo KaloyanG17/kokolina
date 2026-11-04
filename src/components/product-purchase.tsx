@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { Handbag } from "@phosphor-icons/react";
 import type { Product } from "@/data/products";
+import { useT } from "@/i18n/client";
 import { useBag } from "./bag-provider";
 
 export function ProductPurchase({ product }: { product: Product }) {
+  const { product: copy } = useT();
   const { add } = useBag();
   const [size, setSize] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -13,13 +15,13 @@ export function ProductPurchase({ product }: { product: Product }) {
   if (product.soldOut) {
     return (
       <p className="body-5 rounded-md border border-line bg-surface-2 p-4 text-muted">
-        Sold out. This run is finished and may return in a later collection.
+        {copy.soldOutNote}
       </p>
     );
   }
 
   function onAdd() {
-    if (!size) return setError("Choose a size first.");
+    if (!size) return setError(copy.chooseSize);
     setError(null);
     add(product, size);
   }
@@ -28,7 +30,7 @@ export function ProductPurchase({ product }: { product: Product }) {
     <div className="flex flex-col gap-4">
       <fieldset className="flex flex-col gap-2">
         <legend className="title-4 mb-2">
-          Size{size && <span className="text-muted">: {size}</span>}
+          {copy.size}{size && <span className="text-muted">: {size}</span>}
         </legend>
         <div className="flex flex-wrap gap-2">
           {product.sizes.map((s) => (
@@ -54,7 +56,7 @@ export function ProductPurchase({ product }: { product: Product }) {
       </fieldset>
       <button type="button" onClick={onAdd} className="btn-primary button-lg w-full py-3">
         <Handbag size={20} weight="bold" aria-hidden />
-        Add to bag
+        {copy.addToBag}
       </button>
       {error && (
         <p id="size-error" role="alert" className="caption-1 text-danger">

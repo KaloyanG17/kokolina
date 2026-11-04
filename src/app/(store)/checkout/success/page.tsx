@@ -4,19 +4,25 @@ import { getProducts } from "@/lib/catalog";
 import { formatPrice } from "@/lib/format";
 import { stripe } from "@/lib/stripe";
 import { ProductPicture } from "@/components/product-picture";
+import { dictionaries } from "@/i18n/dictionaries";
+import { getLocale, getT } from "@/i18n/server";
 import { ClearBag } from "./clear-bag";
 
-export const metadata: Metadata = { title: "Order confirmed", robots: { index: false } };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT()).success.metaTitle, robots: { index: false } };
+}
 export const dynamic = "force-dynamic";
 
 export default async function CheckoutSuccess({ searchParams }: { searchParams: Promise<{ session_id?: string }> }) {
   const { session_id } = await searchParams;
+  const locale = await getLocale();
+  const { success: copy } = dictionaries[locale];
   const s = stripe();
   const [session, catalog] = await Promise.all([
     s && session_id?.startsWith("cs_")
       ? s.checkout.sessions.retrieve(session_id, { expand: ["line_items.data.price.product"] }).catch(() => null)
       : null,
-    getProducts(),
+    getProducts(locale),
   ]);
   const paid = session?.payment_status === "paid";
 
@@ -40,14 +46,12 @@ export default async function CheckoutSuccess({ searchParams }: { searchParams: 
       {paid && <ClearBag />}
       <div className="mx-auto flex max-w-xl flex-col gap-8 pt-16">
         <div className="flex flex-col gap-4">
-          <p className="caption-3 font-mono uppercase tracking-widest text-ink">&quot;Order confirmed&quot;</p>
+          <p className="caption-3 font-mono uppercase tracking-widest text-ink">{copy.eyebrow}</p>
           <h1 className="heading-4 md:heading-3 text-hero-gradient">
-            {paid ? "Thank you, it is being packed" : "We could not find that order"}
+            {paid ? copy.paidTitle : copy.missingTitle}
           </h1>
           <p className="body-3 text-muted">
-            {paid
-              ? `A confirmation is on its way to ${session?.customer_details?.email ?? "your inbox"}. We email again with tracking when it leaves the studio.`
-              : "If you were charged, your confirmation email has the details. Otherwise your bag is still saved."}
+            {paid ? copy.paidText(session?.customer_details?.email ?? copy.inbox) : copy.missingText}
           </p>
         </div>
 
@@ -66,28 +70,29 @@ export default async function CheckoutSuccess({ searchParams }: { searchParams: 
                       href={`/products/${line.product.slug}`}
                       className="title-3 focus-ring rounded transition-colors duration-300 ease-brand hover:text-ink"
                     >
-                      {line.name}
+                      {line.product.name}
                     </Link>
                   ) : (
                     <span className="title-3">{line.name}</span>
                   )}
                   <span className="caption-5 font-mono uppercase tracking-wide text-muted">
                     {line.product?.lot ? `${line.product.lot} · ` : ""}
-                    {line.size ? `Size ${line.size} · ` : ""}Qty {line.qty}
+                    {line.size ? `${copy.size} ${line.size} · ` : ""}
+                    {copy.qty} {line.qty}
                   </span>
                 </div>
                 <span className="body-5 font-mono tabular-nums">{formatPrice(line.total)}</span>
               </li>
             ))}
             <li className="flex justify-between gap-4 rounded-sm bg-surface-2 p-3">
-              <span className="title-3">Total</span>
+              <span className="title-3">{copy.total}</span>
               <span className="title-3 font-mono tabular-nums">{formatPrice((session?.amount_total ?? 0) / 100)}</span>
             </li>
           </ul>
         )}
 
         <Link href={paid ? "/shop" : "/bag"} className="btn-primary self-start">
-          {paid ? "Keep browsing" : "Back to your bag"}
+          {paid ? copy.keepBrowsing : copy.backToBag}
         </Link>
       </div>
     </section>

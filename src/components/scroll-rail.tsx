@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useT } from "@/i18n/client";
 
 /**
  * A seam down the right edge that replaces the native scrollbar. Thread is
@@ -9,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
  * position. Drag or click the seam to scroll.
  */
 export function ScrollRail() {
+  const t = useT();
   const pathname = usePathname();
   const trackRef = useRef<HTMLDivElement>(null);
   const threadRef = useRef<HTMLDivElement>(null);
@@ -66,7 +68,7 @@ export function ScrollRail() {
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={percent}
-      aria-label="Page scroll position"
+      aria-label={t.scroll}
       onPointerDown={(e) => {
         e.currentTarget.setPointerCapture(e.pointerId);
         scrollToPointer(e.clientY);

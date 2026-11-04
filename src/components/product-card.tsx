@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useT } from "@/i18n/client";
 import type { Product } from "@/data/products";
 import { formatPrice } from "@/lib/format";
 import { ProductPicture } from "./product-picture";
@@ -16,6 +19,7 @@ export function PriceTag({ price, className = "" }: { price: number; className?:
 }
 
 export function ProductCard({ product, idPrefix = "card" }: { product: Product; idPrefix?: string }) {
+  const t = useT();
   return (
     <Link
       href={`/products/${product.slug}`}
@@ -37,7 +41,13 @@ export function ProductCard({ product, idPrefix = "card" }: { product: Product; 
               product.soldOut ? "bg-ink-deep text-cotton" : "bg-thread text-ink-deep"
             }`}
           >
-            {product.soldOut ? "Sold out" : "New"}
+            {product.soldOut ? t.product.soldOut : t.product.new}
+          </span>
+        )}
+        {product.exclusive && (
+          <span className="caption-3 absolute bottom-2 left-2 flex items-center gap-1.5 rounded-md bg-[#141414] px-2 py-1 uppercase tracking-wider text-cotton">
+            <span aria-hidden className="size-1.5 rounded-full bg-dot" />
+            {t.product.exclusive}
           </span>
         )}
       </div>
@@ -68,7 +78,7 @@ export function ProductGrid({ products, idPrefix }: { products: Product[]; idPre
 
 export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
   return (
-    <ul aria-label="Loading products" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+    <ul aria-label={useT().shop.loading} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
       {Array.from({ length: count }, (_, i) => (
         <li key={i} className="flex flex-col gap-4 rounded-md border border-line bg-surface p-2 pb-4">
           <div className="skeleton aspect-[3/4] rounded-sm" />

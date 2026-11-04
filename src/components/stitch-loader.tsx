@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { site } from "@/data/site";
+import { useT } from "@/i18n/client";
+import { Wordmark } from "./wordmark";
 
 const DASHES = [40, 92, 144, 196, 248];
 const DASH_W = 36;
@@ -40,9 +41,10 @@ function keyframes() {
 
 const KEYFRAMES = keyframes();
 
-export function StitchLoader({ className = "", label = "Loading" }: { className?: string; label?: string }) {
+export function StitchLoader({ className = "", label }: { className?: string; label?: string }) {
+  const { loader } = useT();
   return (
-    <div role="status" aria-label={label} className={className}>
+    <div role="status" aria-label={label ?? loader.loading} className={className}>
       <style>{KEYFRAMES}</style>
       <svg viewBox="0 0 330 120" className="h-auto w-full overflow-visible" aria-hidden>
         {/* Fabric seam holes the thread follows */}
@@ -104,6 +106,7 @@ export function StitchLoader({ className = "", label = "Loading" }: { className?
  * cycle so the animation reads, then lifts away.
  */
 export function LoadingScreen() {
+  const { loader } = useT();
   const [phase, setPhase] = useState<"show" | "leaving" | "gone">("show");
 
   useEffect(() => {
@@ -133,9 +136,9 @@ export function LoadingScreen() {
         phase === "leaving" ? "pointer-events-none -translate-y-8 opacity-0" : "opacity-100"
       }`}
     >
-      <p className="label-tag patch title-2 px-6">&quot;{site.brand}&quot;</p>
-      <StitchLoader label="Loading the shop" className="w-full max-w-sm" />
-      <p className="caption-4 font-mono uppercase tracking-widest text-faded">Stitching the collection</p>
+      <p className="label-tag patch title-2 px-6"><Wordmark /></p>
+      <StitchLoader label={loader.loading} className="w-full max-w-sm" />
+      <p className="caption-4 font-mono uppercase tracking-widest text-faded">{loader.stitching}</p>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { sendWelcome } from "@/lib/email";
+import { getLocale } from "@/i18n/server";
 import { serviceClient } from "@/lib/supabase/server";
 
 const Body = z.object({
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    await sendWelcome(email, data.unsubscribe_token);
+    await sendWelcome(email, data.unsubscribe_token, await getLocale());
   } catch (e) {
     // The signup is saved; a failed welcome email should not fail the request
     console.error("[subscribe] welcome email failed", e);

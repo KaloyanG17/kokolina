@@ -41,6 +41,8 @@ export type Product = {
   stock?: number;
   isNew?: boolean;
   soldOut?: boolean;
+  /** Part of the red dot exclusive run. */
+  exclusive?: boolean;
 };
 
 const WAIST = ["26", "28", "30", "32", "34", "36"];

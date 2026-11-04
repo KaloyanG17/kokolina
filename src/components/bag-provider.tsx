@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import type { Product } from "@/data/products";
+import { useT } from "@/i18n/client";
 
 export type BagLine = { productId: string; size: string; qty: number };
 
@@ -43,6 +44,7 @@ export function BagProvider({
   catalog: Product[];
   checkoutEnabled: boolean;
 }) {
+  const { added } = useT().bag;
   const [lines, setLines] = useState<BagLine[]>([]);
   const [ready, setReady] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -89,10 +91,10 @@ export function BagProvider({
         }
         return [...prev, { productId: product.slug, size, qty: 1 }];
       });
-      showToast(`${product.name}, size ${size}, added to your bag`);
+      showToast(added(product.name, size));
       setIsOpen(true);
     },
-    [showToast],
+    [showToast, added],
   );
 
   const setQty = useCallback((productId: string, size: string, qty: number) => {

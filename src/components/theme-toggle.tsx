@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/i18n/client";
 import { Moon, Sun } from "@phosphor-icons/react";
 
 /**
@@ -23,7 +24,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
     <button
       type="button"
       onClick={toggle}
-      aria-label="Switch between light and dark theme"
+      aria-label={useT().nav.theme}
       className={`focus-ring relative flex size-10 items-center justify-center overflow-hidden rounded-sm text-muted transition-[background-color,color,transform] duration-300 ease-brand hover:bg-surface-3 hover:text-fg active:scale-[0.98] ${className}`}
     >
       <Moon

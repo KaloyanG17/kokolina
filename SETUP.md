@@ -13,6 +13,7 @@ Redeploy after changing variables in Vercel.
 1. Create a project at supabase.com. Pick an EU region.
 2. **SQL Editor**: paste and run `supabase/migrations/0001_init.sql`, then
    `supabase/seed.sql` (12 test products, picture slots, 2 test subscribers).
+   Then run `supabase/migrations/0002_bulgarian_and_exclusive.sql` (Bulgarian product text and the exclusive flag).
 3. **Authentication > Users > Add user**: create your admin login with email
    and password. Turn off public sign ups under Authentication > Sign In / Providers.
 4. **SQL Editor**: allow that email into the admin:

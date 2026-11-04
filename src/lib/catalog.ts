@@ -1,6 +1,14 @@
+import { unstable_cache } from "next/cache";
 import { categories, sampleProducts, type Category, type Product } from "@/data/products";
 import type { GarmentKind, Wash } from "@/components/product-art";
+import { defaultLocale, type Locale } from "@/i18n/config";
 import { mediaUrl, publicClient } from "@/lib/supabase/server";
+
+/** Cache tag for everything read from the catalogue; admin saves revalidate it. */
+export const CATALOG_TAG = "catalog";
+
+/** Text fields with a Bulgarian copy in <field>_bg. Empty copies fall back to English. */
+type Translated = "name" | "colour" | "fabric" | "description" | "fit" | "care";
 
 /** Row shape of public.products joined with its images. */
 export type ProductRow = {
@@ -22,11 +30,13 @@ export type ProductRow = {
   is_new: boolean;
   sold_out: boolean;
   published: boolean;
+  exclusive?: boolean;
   sort: number;
   product_images?: { path: string; alt: string; sort: number }[];
-};
+} & Partial<Record<`${Translated}_bg`, string | null>>;
 
-export function rowToProduct(r: ProductRow): Product {
+export function rowToProduct(r: ProductRow, locale: Locale = "en"): Product {
+  const text = (field: Translated) => (locale === "bg" && r[`${field}_bg`]?.trim()) || r[field];
   const images = [...(r.product_images ?? [])]
     .sort((a, b) => a.sort - b.sort)
     .map((i) => ({ url: mediaUrl(i.path)!, alt: i.alt }));
@@ -34,14 +44,14 @@ export function rowToProduct(r: ProductRow): Product {
     id: r.id,
     slug: r.slug,
     lot: r.lot,
-    name: r.name,
+    name: text("name"),
     category: (categories as readonly string[]).includes(r.category) ? (r.category as Category) : "Jeans",
     price: r.price_cents / 100,
-    colour: r.colour,
-    fabric: r.fabric,
-    description: r.description,
-    fit: r.fit,
-    care: r.care,
+    colour: text("colour"),
+    fabric: text("fabric"),
+    description: text("description"),
+    fit: text("fit"),
+    care: text("care"),
     sizes: r.sizes,
     art: r.art as GarmentKind,
     wash: r.wash as Wash,
@@ -49,34 +59,48 @@ export function rowToProduct(r: ProductRow): Product {
     images,
     isNew: r.is_new,
     soldOut: r.sold_out || r.stock <= 0,
+    exclusive: Boolean(r.exclusive),
   };
 }
 
 export const PRODUCT_SELECT = "*, product_images(path, alt, sort)";
 
+// Pages render per language, so the rows are cached here instead of in the page cache.
+// A failed read throws, which keeps it out of the cache.
+const publishedRows = unstable_cache(
+  async () => {
+    const db = publicClient();
+    if (!db) return null;
+    const { data, error } = await db
+      .from("products")
+      .select(PRODUCT_SELECT)
+      .eq("published", true)
+      .order("sort")
+      .order("created_at");
+    if (error) throw new Error(error.message);
+    return data as ProductRow[];
+  },
+  ["published-products"],
+  { revalidate: 60, tags: [CATALOG_TAG] },
+);
+
 /**
- * Published products, in admin sort order. Falls back to the sample
- * catalogue when Supabase is not configured or unreachable, so the shop
- * always renders.
+ * Published products in admin sort order, in the given language. Falls back
+ * to the sample catalogue when Supabase is not configured or unreachable, so
+ * the shop always renders.
  */
-export async function getProducts(): Promise<Product[]> {
-  const db = publicClient();
-  if (!db) return sampleProducts;
-  const { data, error } = await db
-    .from("products")
-    .select(PRODUCT_SELECT)
-    .eq("published", true)
-    .order("sort")
-    .order("created_at");
-  if (error) {
-    console.error("[catalog] falling back to sample products:", error.message);
+export async function getProducts(locale: Locale = defaultLocale): Promise<Product[]> {
+  try {
+    const rows = await publishedRows();
+    return rows ? rows.map((r) => rowToProduct(r, locale)) : sampleProducts;
+  } catch (e) {
+    console.error("[catalog] falling back to sample products:", e instanceof Error ? e.message : e);
     return sampleProducts;
   }
-  return (data as ProductRow[]).map(rowToProduct);
 }
 
-export async function getProduct(slug: string) {
-  return (await getProducts()).find((p) => p.slug === slug);
+export async function getProduct(slug: string, locale: Locale = defaultLocale) {
+  return (await getProducts(locale)).find((p) => p.slug === slug);
 }
 
 export function relatedTo(product: Product, all: Product[], count = 4) {
@@ -86,9 +110,23 @@ export function relatedTo(product: Product, all: Product[], count = 4) {
 
 export type SiteImages = Record<string, { url?: string; alt: string }>;
 
+const siteImageRows = unstable_cache(
+  async (): Promise<SiteImages> => {
+    const db = publicClient();
+    if (!db) return {};
+    const { data, error } = await db.from("site_images").select("key, path, alt");
+    if (error) throw new Error(error.message);
+    return Object.fromEntries((data ?? []).map((r) => [r.key, { url: mediaUrl(r.path), alt: r.alt }]));
+  },
+  ["site-images"],
+  { revalidate: 60, tags: [CATALOG_TAG] },
+);
+
 export async function getSiteImages(): Promise<SiteImages> {
-  const db = publicClient();
-  if (!db) return {};
-  const { data } = await db.from("site_images").select("key, path, alt");
-  return Object.fromEntries((data ?? []).map((r) => [r.key, { url: mediaUrl(r.path), alt: r.alt }]));
+  try {
+    return await siteImageRows();
+  } catch (e) {
+    console.error("[catalog] site images unavailable:", e instanceof Error ? e.message : e);
+    return {};
+  }
 }

@@ -26,7 +26,7 @@ export default async function Orders() {
   if (result.status !== "ok") return null;
   const [{ data: orders, error }, catalog] = await Promise.all([
     result.admin.db.from("orders").select("*").order("created_at", { ascending: false }).limit(100),
-    getProducts(),
+    getProducts("en"),
   ]);
 
   return (

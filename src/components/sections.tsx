@@ -1,11 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Drop, Needle, Plus, Quotes, Ruler, Stack } from "@phosphor-icons/react/dist/ssr";
-import { faqs, press, site, testimonials } from "@/data/site";
+import { press, testimonials } from "@/data/site";
+import { getT } from "@/i18n/server";
 import { AtelierScene } from "./product-art";
 import { Reveal } from "./reveal";
 
-export function SectionHeader({
+export async function SectionHeader({
   id,
   index,
   title,
@@ -18,10 +19,11 @@ export function SectionHeader({
   intro?: string;
   tone?: "light" | "dark";
 }) {
+  const t = await getT();
   return (
     <Reveal className="flex flex-col gap-3">
       <p className={`caption-3 font-mono uppercase tracking-widest ${tone === "dark" ? "text-thread" : "text-ink"}`}>
-        No. {index}
+        {t.section.number} {index}
       </p>
       <h2 id={id} className="heading-4 md:heading-2 max-w-[680px]">
         {title}
@@ -31,38 +33,19 @@ export function SectionHeader({
   );
 }
 
-const benefits = [
-  {
-    icon: Stack,
-    title: "Selvedge cloth",
-    text: `Woven on narrow shuttle looms at ${site.mill}, with the clean edge you see when you turn up a cuff.`,
-  },
-  {
-    icon: Needle,
-    title: "Stitched by hand",
-    text: "Chain stitched hems, bar tacks and copper rivets at every stress point, finished one pair at a time.",
-  },
-  {
-    icon: Drop,
-    title: "Real indigo",
-    text: "Rope dyed so the core of each yarn stays white. Your creases fade into a record of how you wear them.",
-  },
-  {
-    icon: Ruler,
-    title: "Help with fit",
-    text: "Fit notes on every piece and a person who answers sizing questions, including how much raw denim will give.",
-  },
-];
+const benefitIcons = [Stack, Needle, Drop, Ruler];
 
-export function Craft({ campaign }: { campaign?: { url?: string; alt: string } }) {
+export async function Craft({ campaign }: { campaign?: { url?: string; alt: string } }) {
+  const { craft } = await getT();
+  const benefits = craft.benefits.map((b, i) => ({ ...b, icon: benefitIcons[i] }));
   return (
     <section aria-labelledby="craft-title" id="craft" className="px-4 py-24 md:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-12">
         <SectionHeader
           id="craft-title"
           index="02"
-          title="Made slowly, seam by seam"
-          intro={`Each style is cut in runs of ${site.runSize} pieces. When a lot is gone, it is gone.`}
+          title={craft.title}
+          intro={craft.intro}
         />
         <Reveal className="overflow-hidden rounded-sm border border-line">
           {campaign?.url ? (
@@ -93,28 +76,14 @@ export function Craft({ campaign }: { campaign?: { url?: string; alt: string } }
   );
 }
 
-const steps = [
-  {
-    title: "Choose your lot",
-    text: "Pick a size using the fit notes. Unsure how raw denim will give? Write to us before you order.",
-  },
-  {
-    title: "We pack it in the studio",
-    text: `Your order is checked, folded and wrapped, then leaves within ${site.shippingDays}.`,
-  },
-  {
-    title: "Wear it in, or send it back",
-    text: `If it is not right, return it unworn within ${site.returnWindow} for a full refund.`,
-  },
-];
-
-export function Ordering() {
+export async function Ordering() {
+  const { ordering } = await getT();
   return (
     <section aria-labelledby="ordering-title" id="ordering" className="px-4 py-24 md:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-12">
-        <SectionHeader id="ordering-title" index="03" title="How ordering works" />
+        <SectionHeader id="ordering-title" index="03" title={ordering.title} />
         <ol className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {steps.map((s, i) => (
+          {ordering.steps.map((s, i) => (
             <li key={s.title}>
               <Reveal className="stitched flex h-full flex-col gap-8 rounded-md border border-line bg-surface p-6 [--stitch:var(--color-line)]">
                 <span className="heading-4 font-mono text-thread">0{i + 1}</span>
@@ -131,11 +100,12 @@ export function Ordering() {
   );
 }
 
-export function Proof() {
+export async function Proof() {
+  const { proof } = await getT();
   return (
     <section aria-labelledby="proof-title" className="px-4 py-24 md:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-12">
-        <SectionHeader id="proof-title" index="04" title="Worn in and written about" />
+        <SectionHeader id="proof-title" index="04" title={proof.title} />
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {testimonials.map((t, i) => (
             <li key={i}>
@@ -150,7 +120,7 @@ export function Proof() {
           ))}
         </ul>
         <Reveal className="flex flex-col gap-4">
-          <p className="caption-3 font-mono uppercase tracking-widest text-muted">Press</p>
+          <p className="caption-3 font-mono uppercase tracking-widest text-muted">{proof.press}</p>
           <ul className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {press.map((p, i) => (
               <li
@@ -167,19 +137,20 @@ export function Proof() {
   );
 }
 
-export function Faq() {
+export async function Faq() {
+  const { faq } = await getT();
   return (
     <section aria-labelledby="faq-title" id="faq" className="px-4 py-24 md:px-8">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 lg:grid-cols-[1fr_2fr]">
         <SectionHeader
           id="faq-title"
           index="05"
-          title="Questions, answered"
-          intro="Anything else? Write to the studio and a person will answer."
+          title={faq.title}
+          intro={faq.intro}
         />
         <Reveal>
           <ul className="flex flex-col gap-2">
-            {faqs.map((f) => (
+            {faq.items.map((f) => (
               <li key={f.q}>
                 <details className="group rounded-md border border-line bg-surface transition-colors duration-300 ease-brand open:border-ink/30 open:bg-surface-2">
                   <summary className="title-3 focus-ring flex cursor-pointer list-none items-center justify-between gap-4 rounded-md p-6 [&::-webkit-details-marker]:hidden">
@@ -199,24 +170,25 @@ export function Faq() {
   );
 }
 
-export function FinalCta() {
+export async function FinalCta() {
+  const { finalCta, hero } = await getT();
   return (
     <section aria-labelledby="final-title" className="px-4 py-24 md:px-8">
       <Reveal className="denim stitched-lg mx-auto flex max-w-7xl flex-col items-start gap-6 overflow-hidden rounded-lg p-8 md:p-24">
-        <p className="caption-3 font-mono uppercase tracking-widest text-thread">No. 06 · Final fitting</p>
+        <p className="caption-3 font-mono uppercase tracking-widest text-thread">{finalCta.eyebrow}</p>
         <h2 id="final-title" className="heading-4 md:heading-2 max-w-[680px]">
-          Find the pair
+          {finalCta.title[0]}
           <br />
-          you will wear in
+          {finalCta.title[1]}
         </h2>
         <p className="body-3 max-w-xl text-faded">
-          Every lot is cut in small numbers. Free returns within {site.returnWindow} if the fit is not right.
+          {finalCta.text}
         </p>
         <Link
           href="/shop"
           className="btn-primary button-lg bg-cotton px-4 py-3 text-ink-deep hover:bg-cotton-2"
         >
-          &quot;Shop the denim&quot;
+          {hero.cta}
           <ArrowRight size={18} weight="bold" aria-hidden />
         </Link>
       </Reveal>

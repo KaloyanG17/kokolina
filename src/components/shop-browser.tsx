@@ -4,15 +4,12 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { MagnifyingGlass, X } from "@phosphor-icons/react";
 import { categories, type Category, type Product } from "@/data/products";
+import { useT } from "@/i18n/client";
+import type { Dict } from "@/i18n/dictionaries";
 import { ProductGrid } from "./product-card";
 
-const sorts = {
-  featured: "Featured",
-  "price-asc": "Price, low to high",
-  "price-desc": "Price, high to low",
-  new: "New first",
-} as const;
-type Sort = keyof typeof sorts;
+type Sort = keyof Dict["shop"]["sorts"];
+const SORTS: Sort[] = ["featured", "price-asc", "price-desc", "new"];
 
 function matches(text: string, query: string) {
   const haystack = text.toLowerCase();
@@ -24,6 +21,7 @@ function matches(text: string, query: string) {
 }
 
 export function ShopBrowser({ products }: { products: Product[] }) {
+  const t = useT();
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -31,7 +29,7 @@ export function ShopBrowser({ products }: { products: Product[] }) {
   const category = (categories as readonly string[]).includes(params.get("category") ?? "")
     ? (params.get("category") as Category)
     : "All";
-  const sort: Sort = (params.get("sort") as Sort) in sorts ? (params.get("sort") as Sort) : "featured";
+  const sort: Sort = SORTS.includes(params.get("sort") as Sort) ? (params.get("sort") as Sort) : "featured";
   const urlQuery = params.get("q") ?? "";
   const [query, setQuery] = useState(urlQuery);
 
@@ -59,13 +57,13 @@ export function ShopBrowser({ products }: { products: Product[] }) {
     const list = products.filter(
       (p) =>
         (category === "All" || p.category === category) &&
-        matches(`${p.name} ${p.category} ${p.colour} ${p.fabric} ${p.description}`, query.trim()),
+        matches(`${p.name} ${p.category} ${t.categories[p.category]} ${p.colour} ${p.fabric} ${p.description}`, query.trim()),
     );
     if (sort === "price-asc") return [...list].sort((a, b) => a.price - b.price);
     if (sort === "price-desc") return [...list].sort((a, b) => b.price - a.price);
     if (sort === "new") return [...list].sort((a, b) => Number(!!b.isNew) - Number(!!a.isNew));
     return list;
-  }, [products, category, sort, query]);
+  }, [products, category, sort, query, t]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -73,19 +71,19 @@ export function ShopBrowser({ products }: { products: Product[] }) {
         <div className="flex flex-col gap-3 md:flex-row">
           <label className="flex flex-1 items-center gap-2 rounded-sm border border-line bg-base px-4 transition-colors duration-300 ease-brand focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink">
             <MagnifyingGlass size={18} className="shrink-0 text-muted" aria-hidden />
-            <span className="sr-only">Search the shop</span>
+            <span className="sr-only">{t.shop.search}</span>
             <input
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name, fabric or colour"
+              placeholder={t.shop.placeholder}
               className="body-3 min-w-0 flex-1 bg-transparent py-2 placeholder:text-muted focus:outline-none [&::-webkit-search-cancel-button]:hidden"
             />
             {query && (
               <button
                 type="button"
                 onClick={() => setQuery("")}
-                aria-label="Clear search"
+                aria-label={t.shop.clear}
                 className="focus-ring -mr-2 flex size-8 items-center justify-center rounded-sm transition-colors duration-300 ease-brand hover:bg-surface-3"
               >
                 <X size={14} aria-hidden />
@@ -93,22 +91,22 @@ export function ShopBrowser({ products }: { products: Product[] }) {
             )}
           </label>
           <label className="flex items-center gap-2 rounded-sm border border-line bg-base px-4 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink">
-            <span className="caption-1 shrink-0 text-muted">Sort</span>
+            <span className="caption-1 shrink-0 text-muted">{t.shop.sort}</span>
             <select
               value={sort}
               onChange={(e) => update({ sort: e.target.value })}
               className="title-4 flex-1 cursor-pointer bg-transparent py-2 focus:outline-none"
             >
-              {Object.entries(sorts).map(([value, label]) => (
+              {SORTS.map((value) => (
                 <option key={value} value={value}>
-                  {label}
+                  {t.shop.sorts[value]}
                 </option>
               ))}
             </select>
           </label>
         </div>
 
-        <div role="group" aria-label="Filter by category" className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0">
+        <div role="group" aria-label={t.shop.filter} className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0">
           {categories.map((c) => (
             <button
               key={c}
@@ -119,23 +117,21 @@ export function ShopBrowser({ products }: { products: Product[] }) {
                 category === c ? "border-indigo bg-indigo text-cotton" : "border-line text-muted hover:bg-surface-3 hover:text-fg"
               }`}
             >
-              {c}
+              {t.categories[c]}
             </button>
           ))}
         </div>
       </div>
 
       <p role="status" aria-live="polite" className="caption-1 text-muted">
-        {results.length === 1 ? "1 piece" : `${results.length} pieces`}
-        {query.trim() && <> matching “{query.trim()}”</>}
-        {category !== "All" && <> in {category.toLowerCase()}</>}
+        {t.shop.summary(results.length, query.trim(), category === "All" ? null : t.categories[category])}
       </p>
 
       {results.length === 0 ? (
         <div className="flex flex-col items-center gap-4 rounded-lg border border-line bg-surface px-6 py-24 text-center">
-          <p className="title-2">No pieces match your search</p>
+          <p className="title-2">{t.shop.noneTitle}</p>
           <p className="body-6 max-w-sm text-muted">
-            Try a broader word like “wool” or “dress”, or clear the filters to see the whole collection.
+            {t.shop.noneText}
           </p>
           <button
             type="button"
@@ -145,7 +141,7 @@ export function ShopBrowser({ products }: { products: Product[] }) {
             }}
             className="btn-secondary"
           >
-            Clear search and filters
+            {t.shop.clearAll}
           </button>
         </div>
       ) : (

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Wordmark } from "@/components/wordmark";
 import { redirect } from "next/navigation";
 import { getAdmin } from "@/lib/admin";
 import { has } from "@/lib/env";
@@ -49,7 +50,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
       <aside className="flex flex-col gap-6 border border-x-0 border-t-0 border-line bg-surface p-4 md:sticky md:top-0 md:h-screen md:w-64 md:border-b-0 md:border-r md:p-6">
         <div className="flex items-center justify-between gap-2">
           <Link href="/admin" className="label-tag patch title-4 focus-ring">
-            &quot;Kokolina&quot;
+            <Wordmark />
           </Link>
           <span className="caption-3 font-mono uppercase tracking-widest text-muted">Admin</span>
         </div>

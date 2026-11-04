@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-
-const lines = ["Fewer pairs,", "worn for longer.", "Denim that fades", "to fit only you."];
+import { useT } from "@/i18n/client";
 
 /**
  * Each word goes from muted to full opacity as it crosses a trigger line
  * at 60% of the viewport height, in reading order.
  */
 export function TaglineReveal() {
+  const { tagline } = useT();
   const ref = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -32,13 +32,13 @@ export function TaglineReveal() {
     );
     words.forEach((w) => observer.observe(w));
     return () => observer.disconnect();
-  }, []);
+  }, [tagline]);
 
   return (
-    <section aria-label="What we stand for" className="denim px-4 py-24 md:px-8">
+    <section aria-label={tagline.label} className="denim px-4 py-24 md:px-8">
       <div className="mx-auto max-w-7xl py-12">
         <h2 ref={ref} className="heading-3 md:heading-1 max-w-[680px]">
-          {lines.map((line, li) => (
+          {tagline.lines.map((line, li) => (
             <span key={li} className="block">
               {line.split(" ").map((word, wi) => (
                 <span key={wi}>

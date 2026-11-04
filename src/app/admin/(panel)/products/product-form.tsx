@@ -51,6 +51,7 @@ export function ProductForm({ product }: { product?: ProductRow }) {
             ["published", "Published in the shop", p?.published ?? true],
             ["is_new", "Mark as new", p?.is_new ?? false],
             ["sold_out", "Force sold out", p?.sold_out ?? false],
+            ["exclusive", "Exclusive (red dot run)", p?.exclusive ?? false],
           ].map(([name, label, checked]) => (
             <label key={String(name)} className="body-5 flex cursor-pointer items-center gap-2">
               <input type="checkbox" name={String(name)} defaultChecked={Boolean(checked)} className="size-4 accent-[var(--color-ink)]" />
@@ -67,6 +68,17 @@ export function ProductForm({ product }: { product?: ProductRow }) {
         <Field label="Description" name="description" as="textarea" rows={4} defaultValue={p?.description} error={e.description} className="sm:col-span-2" />
         <Field label="Fit notes" name="fit" as="textarea" rows={2} defaultValue={p?.fit} error={e.fit} />
         <Field label="Care" name="care" as="textarea" rows={2} defaultValue={p?.care} error={e.care} />
+      </fieldset>
+
+      <fieldset className="grid grid-cols-1 gap-4 rounded-md border border-line bg-surface p-6 sm:grid-cols-2">
+        <legend className="title-3 px-2">Bulgarian (shown by default)</legend>
+        <p className="body-6 text-muted sm:col-span-2">Leave a field empty to show the English text on the Bulgarian site.</p>
+        <Field label="Име" name="name_bg" defaultValue={p?.name_bg ?? ""} error={e.name_bg} className="sm:col-span-2" />
+        <Field label="Цвят" name="colour_bg" defaultValue={p?.colour_bg ?? ""} placeholder="Сурово индиго" error={e.colour_bg} />
+        <Field label="Плат" name="fabric_bg" defaultValue={p?.fabric_bg ?? ""} placeholder="14 oz селвидж деним" error={e.fabric_bg} />
+        <Field label="Описание" name="description_bg" as="textarea" rows={4} defaultValue={p?.description_bg ?? ""} error={e.description_bg} className="sm:col-span-2" />
+        <Field label="Кройка" name="fit_bg" as="textarea" rows={2} defaultValue={p?.fit_bg ?? ""} error={e.fit_bg} />
+        <Field label="Поддръжка" name="care_bg" as="textarea" rows={2} defaultValue={p?.care_bg ?? ""} error={e.care_bg} />
       </fieldset>
 
       <fieldset className="grid grid-cols-1 gap-4 rounded-md border border-line bg-surface p-6 sm:grid-cols-2">

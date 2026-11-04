@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { site } from "@/data/site";
+import { useT } from "@/i18n/client";
 
 /**
  * Engraved close-up of the back of a pair of jeans: waistband, belt loops,
@@ -41,14 +42,16 @@ const SEAMS: Seam[] = [
     lines: ["M0 292 C250 262 550 222 718 200", "M0 302 C250 272 550 232 719 210"],
     dur: 1.3,
   },
+  // Pocket hem: a double row just under the top edge, above the fold
   {
-    guide: "M140 352 L590 322",
-    lines: ["M140 350 L590 320", "M141 359 L591 329"],
+    guide: "M140 350 L592 321",
+    lines: ["M140 345 L591 317", "M141 354 L592 326"],
     dur: 0.9,
   },
+  // Pocket attached with a double row parallel to its edges, from the hem down round the point
   {
-    guide: "M146 372 L204 660 L385 748 L566 632 L586 340",
-    lines: ["M144 370 L202 660 L385 748 L566 632 L586 340", "M153 371 L211 654 L385 738 L558 626 L577 341"],
+    guide: "M144 334 L187 652 L390 715 L584 627 L586 306",
+    lines: ["M139 334 L183 656 L390 720 L589 630 L591 306", "M148 334 L191 649 L390 710 L580 624 L582 306"],
     dur: 2.2,
   },
   {
@@ -58,7 +61,10 @@ const SEAMS: Seam[] = [
   },
 ];
 
-const POCKET = "M130 335 L600 305 L578 640 L385 762 L190 668 Z";
+// Five sided back pocket, symmetric and tilted with the yoke
+const POCKET = "M130 335 L600 305 L598 636 L391 729 L174 663 Z";
+const POCKET_HEM = "M130 335 L600 305 L601 335 L132 365 Z";
+const POCKET_FOLD = "M132 365 L601 335";
 const STITCH = { stroke: "var(--color-thread)", strokeWidth: 2.4, strokeDasharray: "7 5", fill: "none" } as const;
 
 function barTack(x: number, y: number, angle = 0) {
@@ -86,6 +92,7 @@ function seamStitches(s: Seam, i: number) {
 }
 
 export function DenimBack({ className = "" }: { className?: string }) {
+  const t = useT();
   const svgRef = useRef<SVGSVGElement>(null);
   const [mode, setMode] = useState<"animated" | "static">("animated");
 
@@ -114,7 +121,7 @@ export function DenimBack({ className = "" }: { className?: string }) {
       viewBox="0 0 800 900"
       preserveAspectRatio="xMidYMid slice"
       role="img"
-      aria-label={`Engraving of the back of a pair of ${site.brand} jeans: a black woven label on the waistband, belt loops, the yoke seam and a back pocket printed with the words worn in, with copper stitching being sewn along each seam`}
+      aria-label={t.hero.art}
       className={`text-faded ${className}`}
     >
       <defs>
@@ -186,16 +193,16 @@ export function DenimBack({ className = "" }: { className?: string }) {
         <g clipPath="url(#db-pocket)" stroke="none">
           <rect width="800" height="900" fill="url(#engl-twill)" fillOpacity="0.5" />
           <rect x="520" width="120" height="900" fill="url(#engl-cross)" fillOpacity="0.55" />
-          <path d="M130 335 L600 305 L598 336 L132 366 Z" fill="url(#engl-cross)" fillOpacity="0.5" />
+          <path d={POCKET_HEM} fill="url(#engl-cross)" fillOpacity="0.5" />
         </g>
         <path d={POCKET} fill="none" strokeWidth="1.8" />
-        <path d="M132 366 L598 336" fill="none" strokeWidth="1.2" />
+        <path d={POCKET_FOLD} fill="none" strokeWidth="1.2" />
 
         {/* Printed slogan, slightly cracked like an old screen print */}
         <g transform="rotate(-3.8 380 500)" mask="url(#db-print)">
           <text
             x="380"
-            y="486"
+            y="482"
             textAnchor="middle"
             fontSize="78"
             fontWeight="700"
@@ -204,11 +211,11 @@ export function DenimBack({ className = "" }: { className?: string }) {
             stroke="none"
             style={{ fontFamily: "var(--font-sans)" }}
           >
-            &quot;WORN
+            WORN
           </text>
           <text
             x="380"
-            y="566"
+            y="562"
             textAnchor="middle"
             fontSize="78"
             fontWeight="700"
@@ -217,7 +224,7 @@ export function DenimBack({ className = "" }: { className?: string }) {
             stroke="none"
             style={{ fontFamily: "var(--font-sans)" }}
           >
-            IN&quot;
+            IN
           </text>
         </g>
 
@@ -226,6 +233,17 @@ export function DenimBack({ className = "" }: { className?: string }) {
         <path d="M0 64 C200 54 600 54 800 70 L800 156 C600 140 200 140 0 150 Z" className="fill-indigo" strokeWidth="1.6" />
         <path d="M0 64 C200 54 600 54 800 70 L800 156 C600 140 200 140 0 150 Z" fill="url(#engl-cross)" fillOpacity="0.55" stroke="none" />
 
+        {/* Bar tacks at the pocket corners */}
+        {barTack(144, 338, 82)}
+        {barTack(587, 310, 90)}
+
+        {/* Side seam */}
+        <path d="M722 160 C732 400 762 650 802 900" fill="none" strokeWidth="1.6" />
+      </g>
+
+      {/* Copper stitching, revealed seam by seam. Waistband seams run under the belt loops and the label. */}
+      {SEAMS.slice(0, 2).map((s, i) => seamStitches(s, i))}
+      <g stroke="currentColor" strokeLinejoin="round" strokeLinecap="round">
         {/* Belt loops */}
         {[56, 642].map((x) => (
           <g key={x}>
@@ -236,17 +254,7 @@ export function DenimBack({ className = "" }: { className?: string }) {
             {barTack(x + 8, 166)}
           </g>
         ))}
-
-        {/* Bar tacks at the pocket corners */}
-        {barTack(132, 378, 80)}
-        {barTack(584, 348, 95)}
-
-        {/* Side seam */}
-        <path d="M722 160 C732 400 762 650 802 900" fill="none" strokeWidth="1.6" />
       </g>
-
-      {/* Copper stitching, revealed seam by seam. Waistband seams sit under the label. */}
-      {SEAMS.slice(0, 2).map((s, i) => seamStitches(s, i))}
       {/* Woven label, sewn on in the animation */}
       <g>
         <rect x="250" y="32" width="270" height="152" fill="#0b0b0b" fillOpacity="0.35" stroke="none" transform="translate(6 7)" />
@@ -263,7 +271,7 @@ export function DenimBack({ className = "" }: { className?: string }) {
           stroke="none"
           style={{ fontFamily: "var(--font-sans)" }}
         >
-          &quot;{site.brand.toUpperCase()}&quot;
+          {site.brand.toUpperCase().replace("I", "İ")}
         </text>
         <text
           x="385"

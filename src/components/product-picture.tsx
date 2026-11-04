@@ -22,7 +22,7 @@ export function ProductPicture({
       <div className={`relative ${className}`}>
         <Image
           src={photo.url}
-          alt={photo.alt || `${product.name} in ${product.colour}`}
+          alt={photo.alt || `${product.name}, ${product.colour}`}
           fill
           sizes={sizes}
           priority={priority}

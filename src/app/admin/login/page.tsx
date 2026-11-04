@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Wordmark } from "@/components/wordmark";
 import Link from "next/link";
 import { has } from "@/lib/env";
 import { LoginForm } from "./login-form";
@@ -10,7 +11,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-12">
       <div className="flex w-full max-w-sm flex-col gap-6 rounded-md border border-line bg-surface p-8">
-        <span className="label-tag patch title-4 self-start">&quot;Kokolina&quot;</span>
+        <span className="label-tag patch title-4 self-start"><Wordmark /></span>
         <div className="flex flex-col gap-2">
           <h1 className="heading-5">Admin sign in</h1>
           <p className="body-6 text-muted">For the studio team. Products, pictures, orders and the newsletter.</p>

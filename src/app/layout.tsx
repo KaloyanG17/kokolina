@@ -2,33 +2,40 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { site } from "@/data/site";
 import { EngraveDefs } from "@/components/product-art";
+import { LocaleProvider } from "@/i18n/client";
+import { getLocale } from "@/i18n/server";
+import { dictionaries } from "@/i18n/dictionaries";
 import "./globals.css";
 
+// Cyrillic for the Bulgarian site, latin-ext for the dotted İ in the wordmark
 const geist = Geist({
   variable: "--font-geist",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext", "cyrillic"],
 });
 
 // Monospace only for lot numbers, sizes and other label data
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext", "cyrillic"],
 });
 
-const title = `${site.brand}, selvedge denim cut and stitched in small runs`;
-
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? site.url),
-  title: { default: title, template: `%s · ${site.brand}` },
-  description: site.description,
-  openGraph: {
-    type: "website",
-    siteName: site.brand,
-    title,
-    description: site.description,
-  },
-  twitter: { card: "summary_large_image", title, description: site.description },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const { title, description } = dictionaries[locale].meta;
+  return {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? site.url),
+    title: { default: title, template: `%s · ${site.brand}` },
+    description,
+    openGraph: {
+      type: "website",
+      siteName: site.brand,
+      locale: locale === "bg" ? "bg_BG" : "en_GB",
+      title,
+      description,
+    },
+    twitter: { card: "summary_large_image", title, description },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [
@@ -41,9 +48,10 @@ export const viewport: Viewport = {
 // Runs before paint: applies the saved theme, or the system one, with no flash
 const themeScript = `(function(){var d=document.documentElement,m=window.matchMedia("(prefers-color-scheme: dark)"),s=null;try{s=localStorage.getItem("theme")}catch(e){}d.dataset.theme=s||(m.matches?"dark":"light");if(!s)m.addEventListener("change",function(e){try{if(localStorage.getItem("theme"))return}catch(x){}d.dataset.theme=e.matches?"dark":"light"})})()`;
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getLocale();
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <noscript>
@@ -55,10 +63,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           href="#main"
           className="button-sm sr-only z-[300] rounded-sm bg-ink-deep px-3 py-2 text-cotton focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
         >
-          Skip to content
+          {dictionaries[locale].meta.skip}
         </a>
         <EngraveDefs />
-        {children}
+        <LocaleProvider locale={locale}>{children}</LocaleProvider>
       </body>
     </html>
   );

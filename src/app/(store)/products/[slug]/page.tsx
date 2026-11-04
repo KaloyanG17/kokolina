@@ -8,36 +8,30 @@ import { site } from "@/data/site";
 import { ProductPicture } from "@/components/product-picture";
 import { PriceTag, ProductGrid } from "@/components/product-card";
 import { ProductPurchase } from "@/components/product-purchase";
+import { dictionaries } from "@/i18n/dictionaries";
+import { getLocale } from "@/i18n/server";
 
 type Props = { params: Promise<{ slug: string }> };
 
-// Rebuilt in the background at most once a minute; admin edits revalidate straight away
-export const revalidate = 60;
-
-export async function generateStaticParams() {
-  return (await getProducts()).map((p) => ({ slug: p.slug }));
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const product = await getProduct((await params).slug);
+  const product = await getProduct((await params).slug, await getLocale());
   if (!product) return {};
   return { title: product.name, description: product.description };
 }
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
-  const all = await getProducts();
+  const locale = await getLocale();
+  const t = dictionaries[locale];
+  const all = await getProducts(locale);
   const product = all.find((p) => p.slug === slug);
   if (!product) notFound();
   const extraPhotos = product.images?.slice(1) ?? [];
 
   const details = [
-    { title: "Fabric and care", body: `${product.fabric}. ${product.care}` },
-    { title: "Fit", body: product.fit },
-    {
-      title: "Shipping and returns",
-      body: `Leaves the studio within ${site.shippingDays}. Free returns on unworn pieces within ${site.returnWindow}.`,
-    },
+    { title: t.product.fabricCare, body: `${product.fabric}. ${product.care}` },
+    { title: t.product.fit, body: product.fit },
+    { title: t.product.shipping, body: t.product.shippingBody },
   ];
 
   const productSchema = {
@@ -64,7 +58,7 @@ export default async function ProductPage({ params }: Props) {
             <ol className="caption-1 flex flex-wrap items-center gap-2 text-muted">
               <li>
                 <Link href="/shop" className="focus-ring rounded transition-colors duration-300 ease-brand hover:text-ink">
-                  Shop
+                  {t.product.shop}
                 </Link>
               </li>
               <li aria-hidden className="flex"><CaretRight size={12} /></li>
@@ -73,7 +67,7 @@ export default async function ProductPage({ params }: Props) {
                   href={`/shop?category=${product.category}`}
                   className="focus-ring rounded transition-colors duration-300 ease-brand hover:text-ink"
                 >
-                  {product.category}
+                  {t.categories[product.category]}
                 </Link>
               </li>
               <li aria-hidden className="flex"><CaretRight size={12} /></li>
@@ -99,7 +93,7 @@ export default async function ProductPage({ params }: Props) {
                   <li key={photo.url} className="relative aspect-[3/4] overflow-hidden rounded-md border border-line bg-surface-2">
                     <Image
                       src={photo.url}
-                      alt={photo.alt || `${product.name}, another view`}
+                      alt={photo.alt || t.product.anotherView(product.name)}
                       fill
                       sizes="(min-width: 1024px) 27vw, 50vw"
                       className="object-cover"
@@ -112,9 +106,10 @@ export default async function ProductPage({ params }: Props) {
             <div className="flex flex-col gap-8 lg:sticky lg:top-24 lg:self-start">
               <div className="flex flex-col gap-3">
                 <p className="caption-3 font-mono uppercase tracking-widest text-ink">
-                  {product.lot} · {product.category}
-                  {product.isNew && !product.soldOut && <span className="text-thread"> · New</span>}
-                  {product.soldOut && <span className="text-selvedge"> · Sold out</span>}
+                  {product.lot} · {t.categories[product.category]}
+                  {product.exclusive && <span className="text-dot"> · {t.product.exclusive}</span>}
+                  {product.isNew && !product.soldOut && <span className="text-thread"> · {t.product.new}</span>}
+                  {product.soldOut && <span className="text-selvedge"> · {t.product.soldOut}</span>}
                 </p>
                 <h1 className="heading-4 md:heading-3">{product.name}</h1>
                 <PriceTag price={product.price} className="self-start" />
@@ -146,7 +141,7 @@ export default async function ProductPage({ params }: Props) {
 
         <section aria-labelledby="related-title" className="flex flex-col gap-8">
           <h2 id="related-title" className="heading-5 md:heading-4">
-            You may also like
+            {t.product.related}
           </h2>
           <ProductGrid products={relatedTo(product, all)} idPrefix="related" />
         </section>

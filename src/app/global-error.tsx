@@ -13,7 +13,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
     <html lang="en">
       <body style={{ fontFamily: "system-ui, sans-serif", background: "#f3efe6", color: "#141b2e", margin: 0 }}>
         <main style={{ maxWidth: 560, margin: "20vh auto", padding: 24 }}>
-          <p style={{ fontSize: 12, letterSpacing: "0.2em", textTransform: "uppercase" }}>&quot;Kokolina&quot;</p>
+          <p style={{ fontSize: 12, letterSpacing: "0.2em", textTransform: "uppercase" }}>KOKOLİNA</p>
           <h1 style={{ fontSize: 36, lineHeight: "40px", fontWeight: 600, margin: "12px 0" }}>A seam came loose</h1>
           <p style={{ fontSize: 16, lineHeight: "24px" }}>
             The page failed to load. The error has been reported. Try again, or come back in a moment.

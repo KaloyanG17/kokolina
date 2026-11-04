@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useT } from "@/i18n/client";
 
 const KEY = "analytics-consent";
 
@@ -31,6 +32,7 @@ async function startAnalytics() {
 
 /** Asks once before analytics and session replay may run. The choice is remembered on this device. */
 export function ConsentBanner() {
+  const { consent } = useT();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -60,22 +62,21 @@ export function ConsentBanner() {
   return (
     <div
       role="dialog"
-      aria-label="Analytics consent"
+      aria-label={consent.label}
       className="fixed inset-x-4 bottom-4 z-[90] mx-auto flex max-w-xl flex-col gap-4 rounded-md border border-line bg-surface p-4 shadow-[6px_6px_0_0_var(--color-surface-3)] sm:flex-row sm:items-center"
     >
       <p className="body-6 flex-1 text-muted">
-        We use analytics and anonymised session replays to find what breaks and improve the shop. Form fields are always
-        hidden.{" "}
+        {consent.text}{" "}
         <Link href="/privacy" className="text-ink underline underline-offset-4">
-          Privacy policy
+          {consent.privacy}
         </Link>
       </p>
       <div className="flex gap-2">
         <button type="button" onClick={() => decide(false)} className="btn-secondary button-sm">
-          Decline
+          {consent.decline}
         </button>
         <button type="button" onClick={() => decide(true)} className="btn-primary button-sm">
-          Accept
+          {consent.accept}
         </button>
       </div>
     </div>

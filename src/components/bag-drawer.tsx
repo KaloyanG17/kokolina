@@ -4,14 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { CheckCircle, Handbag, X } from "@phosphor-icons/react";
-import { site } from "@/data/site";
 import { formatPrice } from "@/lib/format";
+import { useT } from "@/i18n/client";
 import { useBag } from "./bag-provider";
 import { BagLines, BagSkeleton, useBagItems } from "./bag-lines";
 import { CheckoutButton } from "./checkout-button";
 
 /** Sidebar bag. Opens from the nav and whenever a piece is added. */
 export function BagDrawer() {
+  const { bag } = useT();
   const { ready, isOpen, close, toast, checkoutEnabled } = useBag();
   const { items, subtotal } = useBagItems();
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -48,13 +49,13 @@ export function BagDrawer() {
       >
         <div className="flex items-center justify-between p-6 pb-4">
           <h2 id="bag-title" className="heading-6">
-            Your bag
+            {bag.title}
           </h2>
           <button
             ref={closeRef}
             type="button"
             onClick={close}
-            aria-label="Close bag"
+            aria-label={bag.close}
             className="focus-ring flex size-10 items-center justify-center rounded-sm transition-[background-color,transform] duration-300 ease-brand hover:bg-surface-3 active:scale-[0.98]"
           >
             <X size={20} aria-hidden />
@@ -79,13 +80,11 @@ export function BagDrawer() {
                 <Handbag size={24} aria-hidden />
               </div>
               <div className="flex flex-col gap-1">
-                <p className="title-2">Your bag is empty</p>
-                <p className="body-6 max-w-64 text-muted">
-                  Pick a piece and a size from the shop and it will wait here.
-                </p>
+                <p className="title-2">{bag.emptyTitle}</p>
+                <p className="body-6 max-w-64 text-muted">{bag.emptyDrawer}</p>
               </div>
               <Link href="/shop" onClick={close} className="btn-primary">
-                Browse the shop
+                {bag.browse}
               </Link>
             </div>
           ) : (
@@ -96,19 +95,17 @@ export function BagDrawer() {
         {ready && items.length > 0 && (
           <div className="flex flex-col gap-3 bg-surface-2 p-6">
             <div className="flex items-center justify-between">
-              <span className="body-5 text-muted">Subtotal</span>
+              <span className="body-5 text-muted">{bag.subtotal}</span>
               <span className="title-3 tabular-nums">{formatPrice(subtotal)}</span>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Link href="/bag" onClick={close} className="btn-secondary">
-                View bag
+                {bag.viewBag}
               </Link>
               <CheckoutButton className="w-full" />
             </div>
             <p className="caption-5 text-center text-muted">
-              {checkoutEnabled
-                ? `Secure payment by Stripe. Free returns within ${site.returnWindow}.`
-                : "Checkout opens once payments are connected."}
+              {checkoutEnabled ? bag.secure : bag.notConnected}
             </p>
           </div>
         )}

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getProducts } from "@/lib/catalog";
 import { env } from "@/lib/env";
+import { dictionaries } from "@/i18n/dictionaries";
+import { getLocale } from "@/i18n/server";
 import { SHIPPING_COUNTRIES, stripe, type CheckoutItem } from "@/lib/stripe";
 
 const Body = z.object({
@@ -22,28 +24,27 @@ const Body = z.object({
  * come from the catalogue on the server, never from the browser.
  */
 export async function POST(req: Request) {
+  const locale = await getLocale();
+  const t = dictionaries[locale].checkoutErrors;
   const s = stripe();
-  if (!s) return NextResponse.json({ error: "Checkout is not connected yet." }, { status: 503 });
+  if (!s) return NextResponse.json({ error: t.notConnected }, { status: 503 });
 
   const parsed = Body.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Your bag could not be read. Refresh and try again." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: t.unreadable }, { status: 400 });
 
-  const catalog = await getProducts();
+  const catalog = await getProducts(locale);
   const items: CheckoutItem[] = [];
   for (const line of parsed.data.lines) {
     const product = catalog.find((p) => p.slug === line.productId);
     if (!product || !product.sizes.includes(line.size)) {
-      return NextResponse.json({ error: "A piece in your bag is no longer available. Remove it and try again." }, { status: 409 });
+      return NextResponse.json({ error: t.unavailable }, { status: 409 });
     }
     if (product.soldOut) {
-      return NextResponse.json({ error: `${product.name} has sold out. Remove it to continue.` }, { status: 409 });
+      return NextResponse.json({ error: t.soldOut(product.name) }, { status: 409 });
     }
     const wanted = items.filter((i) => i.slug === product.slug).reduce((n, i) => n + i.qty, 0) + line.qty;
     if (typeof product.stock === "number" && wanted > product.stock) {
-      return NextResponse.json(
-        { error: `Only ${product.stock} of ${product.name} left. Lower the quantity to continue.` },
-        { status: 409 },
-      );
+      return NextResponse.json({ error: t.lowStock(product.stock, product.name) }, { status: 409 });
     }
     items.push({
       slug: product.slug,
@@ -61,6 +62,7 @@ export async function POST(req: Request) {
 
   const session = await s.checkout.sessions.create({
     mode: "payment",
+    locale,
     line_items: items.map((i) => ({
       quantity: i.qty,
       price_data: {
@@ -68,7 +70,7 @@ export async function POST(req: Request) {
         unit_amount: i.unitAmount,
         product_data: {
           name: i.name,
-          description: `Size ${i.size}`,
+          description: t.size(i.size),
           images: [imageFor(i.slug)],
           metadata: { slug: i.slug, size: i.size },
         },
@@ -80,11 +82,13 @@ export async function POST(req: Request) {
     // Compact copy of the order for the webhook (Stripe metadata values max 500 chars)
     metadata: {
       items: JSON.stringify(items.map((i) => [i.slug, i.size, i.qty, i.unitAmount])).slice(0, 500),
+      // Language for the confirmation email
+      lang: locale,
     },
     success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/bag`,
   });
 
-  if (!session.url) return NextResponse.json({ error: "Stripe did not return a checkout page. Try again." }, { status: 502 });
+  if (!session.url) return NextResponse.json({ error: t.noPage }, { status: 502 });
   return NextResponse.json({ url: session.url });
 }
