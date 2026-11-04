@@ -85,10 +85,6 @@ export function ImageUpload({ productId }: { productId: string }) {
     return new Promise<ImageData>((resolve, reject) => {
       const onMessage = (e: MessageEvent<WorkerMessage>) => {
         const msg = e.data;
-        if (msg.type === "progress") {
-          setStatus(`Downloading the background remover (first time only) ${Math.round((msg.loaded / msg.total) * 100)}%`);
-          return;
-        }
         if (msg.id !== id) return;
         worker.removeEventListener("message", onMessage);
         if (msg.type === "error") reject(new Error(msg.message));
@@ -120,9 +116,9 @@ export function ImageUpload({ productId }: { productId: string }) {
         if (cutOut) {
           try {
             img = await removeBackground(img, file.name);
-          } catch {
+          } catch (err) {
             throw new Error(
-              `The background of ${file.name} could not be removed in this browser. Try Chrome or Edge, or untick Remove background.`,
+              `The background of ${file.name} could not be removed in this browser (${err instanceof Error ? err.message : err}). Try Chrome or Edge, or untick Remove background.`,
             );
           }
         }
@@ -165,7 +161,7 @@ export function ImageUpload({ productId }: { productId: string }) {
       </label>
       <p id="files-hint" className="caption-5 text-muted">
         Any photo works: the background is removed in your browser and the photo is resized before upload. The first
-        background removal downloads the cut-out model once (about 115 MB), which takes a minute; after that it is quick.
+        photo takes a few seconds while the cut-out model loads; after that it is quick.
       </p>
       <input
         name="alt"
